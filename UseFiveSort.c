@@ -1,8 +1,8 @@
 /*
 File: c:/bsd/rigel/sort/Licence.txt
-Date: Sat Jun 09 22:22:31 2012
+Date: Sat Dec 28 15:43:13 2013
 
-Copyright (c) 2012, Dennis de Champeaux.  All rights reserved.
+Copyright (c) 2013, Dennis de Champeaux.  All rights reserved.
 
 The copyright holders hereby grant to any person obtaining a copy of
 this software (the "Software") and/or its associated documentation
@@ -39,7 +39,7 @@ OTHER DEALINGS WITH THE SOFTWARE OR DOCUMENTATION.
 
 
 // File: c:/bsd/rigel/sort/UseFiveSort.c
-// Date: Tue Jul 03 13:19:38 2012
+// Date: Sat Dec 28 15:43:30 2013
 
 /*
    This file is a test bench for excercising fivesort and testing 
@@ -65,7 +65,7 @@ OTHER DEALINGS WITH THE SOFTWARE OR DOCUMENTATION.
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
-
+#include <math.h>
 
 void fivesort(void **AA, int size, 
 	int (*compar ) (const void *, const void * ));
@@ -129,7 +129,7 @@ int main (int argc, char *argv[]) {
      // ... and uncomment validateXYZ ...
   // validateBentley();
   // Measure the sorting time of an algorithm
-     // timeTest()
+  // timeTest();
   // Compare the speed fraction of two algorithms
      // compareFivesortAgainstXYZ();
      // ... and uncomment also compareFivesortAgainstXYZ ...
@@ -198,8 +198,8 @@ void check2(void **A, int N, int M) {
 
 // initializing an array, sort it and check it
 void testFivesort() {
-  int siz = 1024 * 1024;
-  // int siz = 1024*64;
+  // int siz = 1024 * 1024;
+  int siz = 1024*64;
   printf("Running testFivesort on size %d ...\n", siz);
   // create array
   struct intval *pi;
@@ -367,6 +367,11 @@ void validateXYZ() {
   void fivesort(), callQuicksort0();
   validateAlgorithm("Running validate XYZ against trusted callQuicksort0 ...",
 		    fivesort, callQuicksort0);
+  /*
+  void callCut2(), callQuicksort0();
+  validateAlgorithm("Running validate XYZ against trusted callQuicksort0 ...",
+		    callCut2, callQuicksort0);
+  */
 } // end validateXYZ
 
 void validateBentley() { // need to change the 1st function
@@ -429,7 +434,8 @@ void timeTest() {
   int seed;
   int seedLimit = 10;
   int z;
-  int siz = 1024 * 1024 * 16;
+  // int siz = 1024 * 1024 * 16;
+int siz = 1024 * 1024*16;
   // construct array
   struct intval *pi;
   void **A = myMalloc("timeTest 1", sizeof(pi) * siz);
@@ -463,6 +469,7 @@ void timeTest() {
       // for ( k = 0; k < siz; k++ ) A[k] = k%5;
       // for ( k = 0; k < siz; k++ ) A[k] = siz-k;
       fivesort(A, siz, compareIntVal);  
+      // callCut2(A, siz, compareIntVal);
     }
     // ... and subtract the fill time to obtain the sort time
     algTime = clock() - T - TFill;
@@ -577,8 +584,15 @@ void compareCut2AgainstFivesort() {
 
 void **A;
 int (*compareXY)();
+const int cut2Limit = 127;
 
+void heapc();
 void quicksort0();
+void quicksort0c();
+void iswap();
+void dflgm();
+#include "C2sort"
+
 void callQuicksort0(void **AA, int size, 
 	int (*compar ) (const void *, const void * ) ) {
   A = AA;
@@ -586,7 +600,7 @@ void callQuicksort0(void **AA, int size,
   quicksort0(0, size-1);
 } // end callQuicksort0
 
-void cut2(int N, int M);
+// void cut2(int N, int M);
 void callCut2(void **AA, int size, 
 	int (*compar ) (const void *, const void * ) ) {
   A = AA;
@@ -772,26 +786,13 @@ loop:	SWAPINIT(a, es);
 } // end of bentley
 
 // Bentley test-bench content generators
+/*
 void reverse();
 void reverseFront();
 void reverseBack();
 void tweakSort();
 void dither();
-void sawtooth(void **A, int n, int m, int tweak) {
-  // int *A = malloc (sizeof(int) * n);
-  struct intval *pi;
-  int k;
-  for (k = 0; k < n; k++) {
-    pi = (struct intval *)A[k];
-    pi->val = k % m; 
-  }
-  if ( tweak <= 0 ) return;
-  if ( tweak == 1 ) { reverse(A, n); return; }
-  if ( tweak == 2 ) { reverseFront(A, n); return; }
-  if ( tweak == 3 ) { reverseBack(A, n); return; }
-  if ( tweak == 4 ) { tweakSort(A, n); return; }
-  dither(A, n);
-} // end sawtooth
+*/
 
 void reverse2();
 void reverse(void **A, int n) {
@@ -810,9 +811,6 @@ void reverseBack(void **A, int n) {
   reverse2(A, n/2, n-1);
 } // end reverseBack
 
-void **A;
-int (*compareXY)();
-void cut2(int N, int M);
 void tweakSort(void **AA, int n) {
   /*
   A = AA;
@@ -830,6 +828,22 @@ void dither(void **A, int n) {
     pi->val = pi->val + (k % 5);
   }
 } // end dither
+
+void sawtooth(void **A, int n, int m, int tweak) {
+  // int *A = malloc (sizeof(int) * n);
+  struct intval *pi;
+  int k;
+  for (k = 0; k < n; k++) {
+    pi = (struct intval *)A[k];
+    pi->val = k % m; 
+  }
+  if ( tweak <= 0 ) return;
+  if ( tweak == 1 ) { reverse(A, n); return; }
+  if ( tweak == 2 ) { reverseFront(A, n); return; }
+  if ( tweak == 3 ) { reverseBack(A, n); return; }
+  if ( tweak == 4 ) { tweakSort(A, n); return; }
+  dither(A, n);
+} // end sawtooth
 
 void rand2(void **A, int n, int m, int tweak, int seed) {
   srand(seed);
@@ -902,6 +916,29 @@ void shuffle(void **A, int n, int m, int tweak, int seed) {
   if ( tweak == 4 ) { tweakSort(A, n); return; }
   dither(A, n);
 } // end shuffle
+
+void slopes(void **A, int n, int m, int tweak) {
+  int k, i, b, ak;
+  i = k = b = 0; ak = 1;
+  struct intval *pi;
+  while ( k < n ) {
+    if (1000000 < ak) ak = k; else
+    if (ak < -1000000) ak = -k;
+    // A[k] = -(ak + b); ak = A[k];
+    pi = (struct intval *)A[k];
+    ak = -(ak + b);
+    pi->val = ak;
+    k++; i++; b++;
+    if ( 11 == b ) { b = 0; }
+    if ( m == i ) { ak = ak*2; i = 0; }
+  }
+  if ( tweak <= 0 ) return;
+  if ( tweak == 1 ) { reverse(A, n); return; }
+  if ( tweak == 2 ) { reverseFront(A, n); return; }
+  if ( tweak == 3 ) { reverseBack(A, n); return; }
+  if ( tweak == 4 ) { tweakSort(A, n); return; }
+  dither(A, n);
+} // end slopes
 
 void compareBentleyAgainstFivesort() {
   // printf("Entering compareBentleyAgainstCut3 Sawtooth ........\n");
