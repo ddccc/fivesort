@@ -82,7 +82,7 @@ void tps(int N, int M) {
     quicksort0(N, M);
     return;
   }
-  int depthLimit = 2 * floor(log(L));
+  int depthLimit = 2.5 * floor(log(L));
   tpsc(N, M, depthLimit);
 } // end tps
 
