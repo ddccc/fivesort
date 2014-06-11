@@ -57,8 +57,6 @@ OTHER DEALINGS WITH THE SOFTWARE OR DOCUMENTATION.
 #include <string.h>
 #include <math.h>
 
-// const int cut2Limit = 127;
-extern int cut2Limit;
 const int cut3Limit = 250;
 
 char* expiration = "*** License for fivesort has expired ...\n";
@@ -78,8 +76,8 @@ void tpsc();
 // tps is the header function for the three partition sorter tpsc
 void tps(int N, int M) {
   int L = M - N;
-  if ( L < cut2Limit ) { 
-    quicksort0(N, M);
+  if ( L < cut3Limit ) { 
+    cut2(N, M);
     return;
   }
   int depthLimit = 2.5 * floor(log(L));
@@ -100,8 +98,8 @@ void tpsc(int N, int M, int depthLimit) {
     return;
   }
   int L = M - N;
-  if ( L < cut2Limit ) {
-    quicksort0c(N, M, depthLimit);
+  if ( L < cut3Limit ) {
+    cut2c(N, M, depthLimit);
     return;
   }
   depthLimit--;
