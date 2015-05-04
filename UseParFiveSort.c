@@ -137,7 +137,7 @@ int main (int argc, char *argv[]) {
   // To check that threesort produces a sorted array
   // testThreesort();
   // Compare the outputs of two sorting algorithms
-     // validateXYZ(); // must provide an other algorithm XYZ
+     validateXYZ(); // must provide an other algorithm XYZ
      // ... and uncomment validateXYZ ...
   // Measure the sorting time of an algorithm
      // timeTest();
@@ -146,7 +146,7 @@ int main (int argc, char *argv[]) {
      // ... and uncomment also compareFivesortAgainstXYZ ...
   // Whatever here:::
      // compareCut2AgainstThreesort();
-     compareCut2AgainstFivesort();
+     // compareCut2AgainstFivesort();
      // compareQuicksort0AgainstFivesort();
      // validateParFiveSortBT();
   return 0;
@@ -400,7 +400,7 @@ void validateAlgorithm0(char* label, int siz, void (*alg1)(), void (*alg2)() ) {
 // Like validateAlgorithm0 but with fixed array size
 // alg1 is a parallel one, alg2 is sequential
 void validateAlgorithm(char* label, void (*alg1)(), void (*alg2)() ) {
-  validateAlgorithm0(label, 1024 * 1024 * 8, alg1, alg2);
+  validateAlgorithm0(label, 1024 * 1024 * 16, alg1, alg2);
 } // end validateAlgorithm
 
 // Example:: replace XYZ by what you want to validate
@@ -722,13 +722,15 @@ void cut2p(int N, int M) {
 }
 // multi threaded 4-layered Quicksort
 
-const int cut2Limit = 127;
+// const int cut2Limit = 127;
+// #include "C2sort"
 void heapc();
 void quicksort0();
 void quicksort0c();
 void iswap();
 void dflgm();
-#include "C2sort"
+void cut2();
+void cut2c();
 void addTaskSynchronized();
 
 // cut2pc is pretty close to parallel FourSort

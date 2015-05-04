@@ -35,7 +35,7 @@ OTHER DEALINGS WITH THE SOFTWARE OR DOCUMENTATION.
 */
 
 // File: c:/bsd/rigel/sort/ParFiveSort.c
-// Date: Sat Dec 28 15:31:42 2013
+// Date: Sat Dec 28 15:31:42 2013, 2015
 /* This file has the source of the algorithms that make up the 
    parallel version of FiveSort headed by fivesort
 */
@@ -59,6 +59,7 @@ OTHER DEALINGS WITH THE SOFTWARE OR DOCUMENTATION.
 #include <math.h> 
 
 const int cut3PLimit = 250;
+const int cut2Limit = 127;
 
 char* expiration = "*** License for fivesort has expired ...\n";
 
@@ -76,7 +77,7 @@ int NUMTHREADS;
 #include "Hsort"
 #include "Qusort"
 #include "Dsort"
-// #include "C2sort" // used by UseParFiveSort
+#include "C2sort"
 
 
 struct stack *ll;
@@ -588,7 +589,7 @@ void setNext(struct task *t, struct task* tn) {
   ((struct task *) t)->next = tn; }
 struct task *newTask(int N, int M, int depthLimit) {
   struct task *t = (struct task *) 
-    myMallocSS("ParFourSort/ newTask()", sizeof (struct task));
+    myMallocSS("ParFiveSort/ newTask()", sizeof (struct task));
   setN(t, N); setM(t, M); setDL(t, depthLimit); setNext(t, NULL);
   return t;
 } // end newTask
@@ -611,7 +612,7 @@ void decrementSize(struct stack *ll) {
   setSize(ll, getSize(ll) - 1); }
 struct stack *newStack() {
   struct stack *ll = (struct stack *)
-    myMallocSS("ParFourSort/ newStack()", sizeof (struct stack));
+    myMallocSS("ParFiveSort/ newStack()", sizeof (struct stack));
   setFirst(ll, NULL); setSize(ll, 0);
   return ll;
 } // end newStack
@@ -682,6 +683,67 @@ void *sortThread(void *A) { // A-argument is NOT used
   return NULL;
 } // end sortThread
 
+int partitionLeft(int N, int M) { 
+  /*
+    |------------------------|
+    N                        M 
+    A[N] < T             A[M] = T 
+   */
+  int i = N; int j = M; void *T = A[M];
+ again:
+  while ( compareXY(A[++i], T) < 0 ); // T <= A[i]
+  while ( compareXY(T, A[--j]) <= 0 ); // A[j] < T
+  if ( i < j ) {
+      iswap(i, j, A);
+      goto again;
+  }
+  return j;
+} // end partitionLeft
+
+void *partitionThreadLeft(void *ptr) {
+  struct task *tx = ( struct task * ) ptr;
+  int n = getN(tx);
+  int m = getM(tx);
+  // int T = getDL(tx);
+  int ix = partitionLeft(n, m);
+  setN(tx, ix);
+} // end partitionThreadLeft
+
+int partitionRight(int N, int M) { 
+  /*
+    |------------------------|
+    N                        M 
+    A[N] = T             T <= A[M] 
+    Do NOT change A[N]; do allow that no elements < T
+   */
+  int i = N; int j = M; void *T = A[N];
+  while ( compareXY(A[++i], T) < 0 ); // T <= A[i]
+  while ( i <= j && compareXY(T, A[--j]) <= 0 ); // j<i or A[j] < T
+  if ( j < i ) { // j = N -> no elements < T
+    return j;
+  }
+  // i < j
+  iswap(i, j, A);
+  // both sides not empty
+ again:
+  while ( compareXY(A[++i], T) < 0 ); // T <= A[i]
+  while ( compareXY(T, A[--j]) <= 0 ); // A[j] < T
+  if ( i < j ) {
+      iswap(i, j, A);
+      goto again;
+  }
+  return j;
+} // end partitionRight
+
+void *partitionThreadRight(void *ptr) {
+  struct task *tx = ( struct task * ) ptr;
+  int n = getN(tx);
+  int m = getM(tx);
+  // int T = getDL(tx);
+  int ix = partitionRight(n, m);
+  setN(tx, ix);
+} // end partitionThreadRight
+
 int cut2SLimit = 2000;
 void fivesort(void **AA, int size, 
 	 int (*compar ) (const void *, const void * ),
@@ -732,13 +794,107 @@ void fivesort(void **AA, int size,
   // tps(0, size-1);
   sleepingThreads = 0;
   NUMTHREADS = numberOfThreads;
-  // printf("Entering sortArray\n");
+  pthread_t thread_id[NUMTHREADS];
   ll = newStack();
   int depthLimit = 2.5 * floor(log(size));
-  struct task *t = newTask(0, size-1, depthLimit);
-  addTaskSynchronized(ll, t);
+  // Try doing the first partition in parallel with two threads
+  int N = 0; int M = size-1; int L = M-N;
 
-  pthread_t thread_id[NUMTHREADS];
+  // Check for duplicates
+  int sixth = (M - N + 1) / 6;
+  int e1 = N  + sixth;
+  int e5 = M - sixth;
+  int e3 = (N+M) / 2; // The midpoint
+  int e4 = e3 + sixth;
+  int e2 = e3 - sixth;
+  
+  // Sort these elements using a 5-element sorting network
+  void *ae1 = A[e1], *ae2 = A[e2], *ae3 = A[e3], *ae4 = A[e4], *ae5 = A[e5];
+  void *t;
+  // if (ae1 > ae2) { t = ae1; ae1 = ae2; ae2 = t; }
+  if ( 0 < compareXY(ae1, ae2) ) { t = ae1; ae1 = ae2; ae2 = t; } // 1-2
+  if ( 0 < compareXY(ae4, ae5) ) { t = ae4; ae4 = ae5; ae5 = t; } // 4-5
+  if ( 0 < compareXY(ae1, ae3) ) { t = ae1; ae1 = ae3; ae3 = t; } // 1-3
+  if ( 0 < compareXY(ae2, ae3) ) { t = ae2; ae2 = ae3; ae3 = t; } // 2-3
+  if ( 0 < compareXY(ae1, ae4) ) { t = ae1; ae1 = ae4; ae4 = t; } // 1-4
+  if ( 0 < compareXY(ae3, ae4) ) { t = ae3; ae3 = ae4; ae4 = t; } // 3-4
+  if ( 0 < compareXY(ae2, ae5) ) { t = ae2; ae2 = ae5; ae5 = t; } // 2-5
+  if ( 0 < compareXY(ae2, ae3) ) { t = ae2; ae2 = ae3; ae3 = t; } // 2-3
+  if ( 0 < compareXY(ae4, ae5) ) { t = ae4; ae4 = ae5; ae5 = t; } // 4-5
+  // ... and reassign
+  A[e1] = ae1; A[e2] = ae2; A[e3] = ae3; A[e4] = ae4; A[e5] = ae5;
+
+  // Fix end points
+  if ( compareXY(ae1, A[N]) < 0 ) iswap(N, e1, A);
+  if ( compareXY(A[M], ae5) < 0 ) iswap(M, e5, A);
+  
+  void *T = ae3; // pivot
+
+  // check Left label invariant
+  // if ( T <= A[N] || A[M] < T ) {
+  if ( compareXY(T, A[N]) <= 0 || compareXY(A[M], T) < 0 ) {
+    // cannot do first parallel partition
+    struct task *t = newTask(0, size-1, depthLimit);
+    addTaskSynchronized(ll, t);
+  } else {
+    /*
+      |------------------------|------------------------|
+      N                        e3                       M
+      A[N] < T             A[e3] = T                 T<=A[M]
+    */
+
+    struct task *t1 = newTask(N, e3, 0);
+    struct task *t2 = newTask(e3, M, 0);
+    int errcode;
+    if ( (errcode=pthread_create(&thread_id[1], NULL, 
+				 partitionThreadLeft, (void*) t1) )) {
+      errexit(errcode,"ParFiveSort/fivesort()/pthread_create");
+    }
+    if ( (errcode=pthread_create(&thread_id[2], NULL, 
+				 partitionThreadRight, (void*) t2)) ) {
+      errexit(errcode,"ParFiveSort/fivesort()/pthread_create");
+    }
+    if ( (errcode=pthread_join(thread_id[1], NULL) )) {
+      errexit(errcode,"ParFiveSort/fivesort()/pthread_join");
+    }
+    int i1 = getN(t1); free(t1);
+    if ( (errcode=pthread_join(thread_id[2], NULL) )) {
+      errexit(errcode,"ParFiveSort/fivesort()/pthread_join");
+    }
+    int i2 = getN(t2); free(t2);
+    /*      LL            LR           RL           RR
+       |--------------]----------][-----------]-----------------|
+       N     <        i1   >=    e3    <      i2      >=        M
+       i2 = e3 -> RL is empty
+    */
+    int k; int m3;
+    if ( e3 == i2 ) { m3 = i1; } else {
+      int middle2 = e3+1;
+      // int b = middle - i1; int c = i2 - middle2;
+      int b = e3 - i1; int c = i2 - middle2;
+      // swap the two middle segments
+      if ( b <= c ) {
+	// printf("b <= c\n");
+	for ( k = 0; k < b; k++ ) iswap(e3-k, i2-k, A);
+	m3 = i2 - b;
+      }
+      else {
+	// printf("c < b\n");
+	for ( k = 0; k < c+1; k++ ) iswap(middle2+k, i1+1+k, A);
+	m3 = i1 + c+1;
+      }
+    }
+    /*
+      |------------------------][----------------------------|
+      N           <           m3           >=                M
+     */
+    t1 = newTask(N, m3, depthLimit);
+    addTaskSynchronized(ll, t1);
+    t1 = newTask(m3+1, M, depthLimit);
+    addTaskSynchronized(ll, t1);
+  }
+
+  // printf("Entering sortArray\n");
   int i;
   int errcode;
   for ( i = 0; i < NUMTHREADS; i++ ) {
