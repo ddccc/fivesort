@@ -27,6 +27,8 @@ void quicksort0(int N, int M) {
   quicksort0c(N, M, depthLimit);
 } // end quicksort0
 
+void dflgm();
+
 // Quicksort equipped with a defense against quadratic explosion;
 // calling heapsort if depthlimit exhausted
 void quicksort0c(int N, int M, int depthLimit) {
@@ -52,23 +54,15 @@ void quicksort0c(int N, int M, int depthLimit) {
       pn = med(A, pn, pn + d, pn + 2 * d, compareXY);
       p0 = med(A, p0 - d, p0, p0 + d, compareXY);
       pm = med(A, pm - 2 * d, pm - d, pm, compareXY);
-      /* Activation of the check for duplicates gives a slow down 
-	 on uniform input.  If you suspect that duplicates
-	 causing quadratic deterioration are not caught higher-up
-	 you may want to experiment with this check::::
-      if ( 100 < L ) { // check for duplicates
-	int duplicate = -1;
-	if ( compareXY(A[pn], A[pm]) == 0 ) { duplicate = pn; } else
-	if ( compareXY(A[pn], A[p0]) == 0 ) { duplicate = p0; } else
-	if ( compareXY(A[pm], A[p0]) == 0 ) { duplicate = p0; };
-	if ( 0 <= duplicate ) {
-	  dflgm(N, M, duplicate, quicksort0c, depthLimit);
-	  return;
-	}
-      }
-      */
     }
     p0 = med(A, pn, p0, pm, compareXY); // p0 is index to 'best' pivot ...
+
+    if ( compareXY(A[pm], A[p0]) == 0 ) {
+      // suspect all elements are equal
+      dflgm(N, M, p0, quicksort0c, depthLimit);
+      return;
+    }
+
     iswap(N, p0, A); // ... and is put in first position
 
     register void *p = A[N]; // pivot
