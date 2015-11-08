@@ -21,7 +21,8 @@ void dflgm(int N, int M, int pivotx, void (*cut)(), int depthLimit) {
       |---)-----(----)-------(----|
       N   i     lw  up       j    M
       
-      N <= i < lw <= up < j <= M
+      N <= i < lw < up < j <= M
+      2 <= up - lw
       N <= x < i ==> A[x] < p3
       lw < x < up  ==> A[x] = p3
       j < x <= M & ==> p3 < A[x] 
