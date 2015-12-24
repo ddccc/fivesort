@@ -106,7 +106,8 @@ void tpsc(int N, int M, int depthLimit) {
         int sixth = (L + 1) / 6;
         int e1 = N  + sixth;
         int e5 = M - sixth;
-        int e3 = (N+M) / 2; // The midpoint
+	int e3 = N + L/2; // The midpoint
+        // int e3 = (N+M) / 2; // The midpoint
         int e4 = e3 + sixth;
         int e2 = e3 - sixth;
         // Sort these elements using a 5-element sorting network
