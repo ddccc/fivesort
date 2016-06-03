@@ -125,7 +125,7 @@ int main (int argc, char *argv[]) {
      // ... and uncomment also testFiveSort2 ...
      // testFiveSort2();
   // Compare the outputs of two sorting algorithms
-     // validateXYZ(); // must provide an other algorithm XYZ
+     validateXYZ(); // must provide an other algorithm XYZ
      // ... and uncomment validateXYZ ...
   // validateBentley();
   // Measure the sorting time of an algorithm
@@ -135,7 +135,7 @@ int main (int argc, char *argv[]) {
      // ... and uncomment also compareFivesortAgainstXYZ ...
   // Whatever here:::
      // compareQuiksort1AgainstFivesort();
-     compareCut2AgainstFivesort();    
+     // compareCut2AgainstFivesort();    
      // compareBentleyAgainstFivesort(); // on Bentley test bench
   // testQuicksort0();
   // validateFiveSortBT();
@@ -153,12 +153,13 @@ void *myMalloc(char* location, int size) {
 
 // fillarray assigns random values to the int-field of our objects
 void fillarray(void **A, int lng, int startv) {
+  const int range = 1024*1024*32;
   int i;
   srand(startv);
   struct intval *pi;
   for ( i = 0; i < lng; i++) {
     pi = (struct intval *)A[i];
-    pi->val = rand(); 
+    pi->val = rand()%range; 
   }
 } // end of fillarray
 
@@ -359,7 +360,7 @@ void validateAlgorithm0(char* label, int siz, void (*alg1)(), void (*alg2)() ) {
 
 // Like validateAlgorithm0 but with fixed array size
 void validateAlgorithm(char* label, void (*alg1)(), void (*alg2)() ) {
-  validateAlgorithm0(label, 1024 * 1024, alg1, alg2);
+  validateAlgorithm0(label, 1024 * 1024 *16, alg1, alg2);
 } // end validateAlgorithm
 
 // Example:: replace XYZ by what you want to validate

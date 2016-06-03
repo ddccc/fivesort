@@ -189,59 +189,67 @@ void tpsc(int N, int M, int depthLimit) {
 	    goto AIRAJM;
 	  } 
 	  // ai -> M
-	repeatM2:
-	  if ( lw < i ) { i--; goto leftClosed; }
-	  // i <= lw
-	  am = A[lw];
-	  // if ( am < pl ) { // am -> L
-	  if ( compareXY(am, pl) < 0 ) {
-	    A[i++] = am; A[lw--] = ai; 
-	    if ( lw < i ) { i--; goto leftClosed; }
-	    continue;
-	  }
-	  // if ( pr < am ) { // am -> R
-	  if ( compareXY(pr, am) < 0 ) {
-	  repeatR:
-	    aj = A[j]; 
-	    // if ( pr < aj ) { j--; goto repeatR; }
-	    if ( compareXY(pr, aj) < 0 ) { j--; // aj -> R
-	      if ( j < up ) { // right closed
-		A[lw--] = A[j]; A[j] = am;
-		if ( i == lw ) { i--; goto done; }
-		goto rightClosedAIM;
-	      } 
-	      goto repeatR; 
-	    }
-	    // if ( aj < pl ) { // aj -> L
-	    if ( compareXY(aj, pl) < 0 ) {
-	      A[i++] = aj; A[lw--] = ai; A[j--] = am; 
-	      if ( j < up ) { j++; // right closed
-		if ( lw < i ) { // left closed
-		  i--; goto done;
-		}
-		goto rightClosed;
-	      }
-	      continue;
-	    }
-	    // aj -> M
-	    if ( j < up ) { // right closed
-	      j++; 
-	      goto rightClosedAIM;
-	    }
-	    A[lw--] = aj; A[j--] = am; 
-	    if ( j < up ) { j++; // right closed
-	      if ( lw < i ) { i--; goto done; }
-	      goto rightClosed;
-	    }
-	    goto repeatM2;
-	  }
-	  // am -> M
-	  if ( i == lw ) { i--; goto leftClosed; }
-	  lw--; goto repeatM2;
+	  goto AIM;
 	}
 	// left gap closed
 	i--;
 	goto leftClosed;
+
+ AIM:
+	/* 
+	  |)----------(--)-------------(|
+	 N i         lw  up            j M
+	 ai -> M
+	*/
+	if ( lw < i ) { i--; goto leftClosed; }
+	// i <= lw
+	am = A[lw];
+	// if ( am < pl ) { // am -> L
+	if ( compareXY(am, pl) < 0 ) {
+	  A[i++] = am; A[lw--] = ai; 
+	  if ( lw < i ) { i--; goto leftClosed; }
+	  goto again;
+	}
+	// if ( pr < am ) { // am -> R
+	if ( compareXY(pr, am) < 0 ) {
+	repeatR:
+	  aj = A[j]; 
+	  // if ( pr < aj ) { j--; goto repeatR; }
+	  if ( compareXY(pr, aj) < 0 ) { j--; // aj -> R
+	    if ( j < up ) { // right closed
+	      A[lw--] = A[j]; A[j] = am;
+	      if ( i == lw ) { i--; goto done; }
+	      goto rightClosedAIM;
+	    } 
+	    goto repeatR; 
+	  }
+	  // if ( aj < pl ) { // aj -> L
+	  if ( compareXY(aj, pl) < 0 ) {
+	    A[i++] = aj; A[lw--] = ai; A[j--] = am; 
+	    if ( j < up ) { j++; // right closed
+	      if ( lw < i ) { // left closed
+		i--; goto done;
+	      }
+	      goto rightClosed;
+	    }
+	    goto again;
+	  }
+	  // aj -> M
+	  if ( j < up ) { // right closed
+	    j++; 
+	    goto rightClosedAIM;
+	  }
+	  A[lw--] = aj; A[j--] = am; 
+	  if ( j < up ) { j++; // right closed
+	    if ( lw < i ) { i--; goto done; }
+	    goto rightClosed;
+	  }
+	  goto AIM;
+	}
+	// am -> M
+	if ( i == lw ) { i--; goto leftClosed; }
+	lw--; 
+	goto AIM; 
 
  AIRAJM:
 	/* 

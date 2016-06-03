@@ -19,7 +19,7 @@ void quicksort0(int N, int M) {
   int L = M - N;
   if ( L <= 0 ) return;
   // printf("quicksort0 %d %d \n", N, M);
-  if ( L <= 10 ) { 
+  if ( L <= 7 ) { 
     insertionsort(N, M);
     return;
   }
@@ -35,7 +35,7 @@ void quicksort0c(int N, int M, int depthLimit) {
   // printf("Enter quicksort0c N: %d M: %d %d\n", N, M, depthLimit);
   while ( N < M ) {
     int L = M - N;
-    if ( L <= 10 ) {
+    if ( L <= 7 ) {
       insertionsort(N, M);
       return;
     }
@@ -44,19 +44,26 @@ void quicksort0c(int N, int M, int depthLimit) {
       return;
     }
     depthLimit--;
-    // 10 < L
-    // grab median of 3 or 9 to get a good pivot
+
+    // 7 < L
+    int p0 = N + (L>>1); // N + L/2;
     int pn = N;
     int pm = M;
-    int p0 = (pn+pm)/2;
-    if ( 40 < L ) { // do median of 9
-      int d = L/8;
+    if ( 40 < L ) {
+      int d = L>>3; // L/8;
       pn = med(A, pn, pn + d, pn + 2 * d, compareXY);
       p0 = med(A, p0 - d, p0, p0 + d, compareXY);
       pm = med(A, pm - 2 * d, pm - d, pm, compareXY);
+ 
     }
-    p0 = med(A, pn, p0, pm, compareXY); // p0 is index to 'best' pivot ...
-
+    p0 = med(A, pn, p0, pm, compareXY);
+    /* optional check when inputs have many equal elements
+    if ( compareXY(A[N], A[M]) == 0 ) {
+      dflgm(N, M, p0, quicksort0c, depthLimit);
+      return;
+    } */
+    // p0 is index to 'best' pivot ...
+    
     iswap(N, p0, A); // ... and is put in first position
 
     register void *p = A[N]; // pivot
