@@ -1,4 +1,5 @@
-void dflgm(int N, int M, int pivotx, void (*cut)(), int depthLimit) {
+void dflgm(void **A, int N, int M, int pivotx, void (*cut)(), 
+	   int depthLimit, int (*compareXY)()) {
   // printf("dflgm N %i M %i pivotx %i depthLimit %i\n", N,M,pivotx,depthLimit);
   /*
     Simple version of partitioning with: L/M/R
@@ -292,10 +293,10 @@ void dflgm(int N, int M, int pivotx, void (*cut)(), int depthLimit) {
 	}
       */
     if ( i - N  < M - j ) {
-      (*cut)(N, i, depthLimit);
-      (*cut)(j, M, depthLimit);
+      (*cut)(A, N, i, depthLimit, compareXY);
+      (*cut)(A, j, M, depthLimit, compareXY);
       return;
     }
-    (*cut)(j, M, depthLimit);
-    (*cut)(N, i, depthLimit);
+    (*cut)(A, j, M, depthLimit, compareXY);
+    (*cut)(A, N, i, depthLimit, compareXY);
 } // end dflgm

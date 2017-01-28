@@ -58,33 +58,36 @@ OTHER DEALINGS WITH THE SOFTWARE OR DOCUMENTATION.
 #include <math.h>
 
 const int cut3Limit = 250;
+// const int cut2Limit = 127;
 
 char* expiration = "*** License for fivesort has expired ...\n";
 
 // Here more global entities used throughout
-int (*compareXY)();
-void **A;
+// int (*compareXY)();
+// void **A;
 
+/*
 #include "Isort"
 #include "Hsort"
+*/
 #include "Qusort"
 #include "Dsort"
-// #include "C2sort"  // used by UseFiveSort
+#include "C2sort" 
 
 
 void tpsc();
 // tps is the header function for the three partition sorter tpsc
-void tps(int N, int M) {
+void tps(void **A, int N, int M, int (*compareXY)() ) {
   int L = M - N;
   if ( L < cut3Limit ) { 
-    cut2(N, M);
+    cut2(A, N, M, compareXY);
     return;
   }
   int depthLimit = 2.5 * floor(log(L));
-  tpsc(N, M, depthLimit);
+  tpsc(A, N, M, depthLimit, compareXY);
 } // end tps
 
-void tpsc(int N, int M, int depthLimit) {  
+void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {  
   // int z; // for tracing
   register int i, j, up, lw; // indices
   register void *ai, *aj, *am; // array values
@@ -94,12 +97,12 @@ void tpsc(int N, int M, int depthLimit) {
  Start:
   // printf("tpsc N %i M % i dl %i\n", N,M,depthLimit);
   if ( depthLimit <= 0 ) { // prevent quadradic explosion
-    heapc(A, N, M);
+    heapc(A, N, M, compareXY);
     return;
   }
   int L = M - N;
   if ( L < cut3Limit ) {
-    cut2c(N, M, depthLimit);
+    cut2c(A, N, M, depthLimit, compareXY);
     return;
   }
   depthLimit--;
@@ -133,7 +136,7 @@ void tpsc(int N, int M, int depthLimit) {
 	void tpsc();
 	// if ( ae2 == ae3 || ae3 == ae4 ) {
 	if ( compareXY(ae2, ae3) == 0 || compareXY(ae3, ae4) == 0 ) {
-	  dflgm(N, M, e3, tpsc, depthLimit);
+	  dflgm(A, N, M, e3, tpsc, depthLimit, compareXY);
 	  return;
 	}
 
@@ -141,7 +144,7 @@ void tpsc(int N, int M, int depthLimit) {
 	// if ( pl <= A[N] || A[M] <= pr ) {
 	if ( compareXY(pl, A[N]) <= 0 || compareXY(A[M], pr) <= 0 ) {
 	  // ascertain that the corners are not empty
-	  dflgm(N, M, e3, tpsc, depthLimit);
+	  dflgm(A, N, M, e3, tpsc, depthLimit, compareXY);
 	  return;
 	}
 
@@ -493,32 +496,32 @@ void tpsc(int N, int M, int depthLimit) {
 	  exit(0);
 	}
     */
-	// tpsc(A, N, i, depthLimit);
-	// tpsc(A, i+1, j-1, depthLimit);
-	// tpsc(A, j, M, depthLimit);
+	// tpsc(A, N, i, depthLimit, compareXY);
+	// tpsc(A, i+1, j-1, depthLimit, compareXY);
+	// tpsc(A, j, M, depthLimit, compareXY);
       if ( i-N < j-i ) {
-	tpsc(N, i, depthLimit);
+	tpsc(A, N, i, depthLimit, compareXY);
 	if ( j-i < M-j ) {
-	   tpsc(i+1, j-1, depthLimit);
+	  tpsc(A, i+1, j-1, depthLimit, compareXY);
 	   N = j; goto Start;
-	   // (*cut)(A, j, M, depthLimit);
+	   // (*cut)(A, j, M, depthLimit, compareXY);
 	   // return;
 	}
-	tpsc(j, M, depthLimit);
+	tpsc(A, j, M, depthLimit, compareXY);
 	N = i+1; M = j-1; goto Start;
-	// (*cut)(A, i+1, j-1, depthLimit);
+	// (*cut)(A, i+1, j-1, depthLimit, compareXY);
 	// return;
       }
-      tpsc(i+1, j-1, depthLimit);
+      tpsc(A, i+1, j-1, depthLimit, compareXY);
       if ( i-N < M-j ) {
-	tpsc(N, i, depthLimit);
+	tpsc(A, N, i, depthLimit, compareXY);
 	N = j; goto Start;
-	// (*cut)(A, j, M, depthLimit);
+	// (*cut)(A, j, M, depthLimit, compareXY);
 	// return;
       }
-      tpsc(j, M, depthLimit);
+      tpsc(A, j, M, depthLimit, compareXY);
       M = i; goto Start;
-      // (*cut)(A, N, i, depthLimit);
+      // (*cut)(A, N, i, depthLimit, compareXY);
 } // end tpsc
 
 
@@ -562,9 +565,9 @@ void fivesort(void **AA, int size,
   }
   */
   // Proceed !
-  A = AA;
-  compareXY = compar;
-  tps(0, size-1);
+  // A = AA;
+  // compareXY = compar;
+  tps(AA, 0, size-1, compar);
 }
 /* compile with: 
    gcc -c FiveSort.c

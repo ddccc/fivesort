@@ -1,7 +1,9 @@
 // c:/bsd/rigel/sort/Qusort
-// Date: Fri Jan 31 13:32:12 2014/ Tue May 19 15:02:00 2015
+// Date: Fri Jan 31 13:32:12 2014/ Tue May 19 15:02:00 2015, 2017
 // (C) OntoOO/ Dennis de Champeaux
 
+#include "Isort" // insertionsort member
+#include "Hsort" // heapsort member
 
 // calculate the median of 3
 int med(void **A, int a, int b, int c,
@@ -15,32 +17,32 @@ int med(void **A, int a, int b, int c,
 
 void quicksort0c();
 // Quicksort function for invoking quicksort0c.
-void quicksort0(int N, int M) {
+void quicksort0(void **A, int N, int M, int (*compare)()) {
   int L = M - N;
   if ( L <= 0 ) return;
   // printf("quicksort0 %d %d \n", N, M);
   if ( L <= 7 ) { 
-    insertionsort(N, M);
+    insertionsort(A, N, M, compare);
     return;
   }
   int depthLimit = 2.5 * floor(log(L));
-  quicksort0c(N, M, depthLimit);
+  quicksort0c(A, N, M, depthLimit, compare);
 } // end quicksort0
 
 void dflgm();
 
 // Quicksort equipped with a defense against quadratic explosion;
 // calling heapsort if depthlimit exhausted
-void quicksort0c(int N, int M, int depthLimit) {
+void quicksort0c(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
   // printf("Enter quicksort0c N: %d M: %d %d\n", N, M, depthLimit);
   while ( N < M ) {
     int L = M - N;
     if ( L <= 7 ) {
-      insertionsort(N, M);
+      insertionsort(A, N, M, compareXY);
       return;
     }
     if ( depthLimit <= 0 ) {
-      heapc(A, N, M);
+      heapc(A, N, M, compareXY);
       return;
     }
     depthLimit--;
@@ -59,7 +61,7 @@ void quicksort0c(int N, int M, int depthLimit) {
     p0 = med(A, pn, p0, pm, compareXY);
     /* optional check when inputs have many equal elements
     if ( compareXY(A[N], A[M]) == 0 ) {
-      dflgm(N, M, p0, quicksort0c, depthLimit);
+      dflgm(N, M, p0, quicksort0c, depthLimit,, compareXY);
       return;
     } */
     // p0 is index to 'best' pivot ...
@@ -207,10 +209,10 @@ void quicksort0c(int N, int M, int depthLimit) {
     // Recurse on the smallest one and iterate on the other one
     int ia = i-1; int ib = i+1; 
     if ( i-N < M-i ) { 
-      if ( N < ia ) quicksort0c(N, ia, depthLimit);  
+      if ( N < ia ) quicksort0c(A, N, ia, depthLimit, compareXY);  
       N = ib; 
     } else { 
-      if ( ib < M ) quicksort0c(ib, M, depthLimit);  
+      if ( ib < M ) quicksort0c(A, ib, M, depthLimit, compareXY);  
       M = ia; 
     }
   }

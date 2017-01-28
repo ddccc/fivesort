@@ -8,7 +8,7 @@
 // if (a<b) then -1 else if a=b then 0 else 1 
 
 // insertionsort for small segments where the loop has been unrolled
-void insertionsort(int N, int M) {
+void insertionsort(void **A, int N, int M, int (*compareXY)()) {
   if ( M <= N ) return;
   // M <= N + 10 
   register int i, s;

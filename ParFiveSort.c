@@ -59,7 +59,7 @@ OTHER DEALINGS WITH THE SOFTWARE OR DOCUMENTATION.
 #include <math.h> 
 
 const int cut3PLimit = 250;
-const int cut2Limit = 127;
+// const int cut2Limit = 127;
 
 char* expiration = "*** License for fivesort has expired ...\n";
 
@@ -68,16 +68,19 @@ char* expiration = "*** License for fivesort has expired ...\n";
   exit(1);
 
 // Here more global entities used throughout
-int (*compareXY)();
-void **A;
+// int (*compareXY)();
+// void **A;
 int sleepingThreads = 0;
 int NUMTHREADS;
 
+/*
 #include "Isort"
 #include "Hsort"
+*/
 #include "Qusort"
 #include "Dsort"
 #include "C2sort"
+#include "Qstack.c"
 
 
 struct stack *ll;
@@ -87,17 +90,17 @@ void addTaskSynchronized();
 
 void tpsc();
 // tps is the header function for the three partition sorter tpsc
-void tps(int N, int M) {
+void tps(void **A, int N, int M, int (*compar)()) {
   int L = M - N;
   if ( L < cut3PLimit ) { 
-    cut2(N, M);
+    cut2(A, N, M, compar);
     return;
   }
   int depthLimit = 2.5 * floor(log(L));
-  tpsc(N, M, depthLimit);
+  tpsc(A, N, M, depthLimit, compar);
 } // end tps
 
-void tpsc(int N, int M, int depthLimit) {  
+void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {  
   // int z; // for tracing
   register int i, j, up, lw; // indices
   register void *ai, *aj, *am; // array values
@@ -107,12 +110,12 @@ void tpsc(int N, int M, int depthLimit) {
  Start:
   // printf("tpsc N %i M % i dl %i\n", N,M,depthLimit);
   if ( depthLimit <= 0 ) { // prevent quadradic explosion
-    heapc(A, N, M);
+    heapc(A, N, M, compareXY);
     return;
   }
   int L = M - N;
   if ( L < cut3PLimit ) {
-    cut2c(N, M, depthLimit);
+    cut2c(A, N, M, depthLimit, compareXY);
     return;
   }
   depthLimit--;
@@ -146,7 +149,7 @@ void tpsc(int N, int M, int depthLimit) {
 	void tpsc();
 	// if ( ae2 == ae3 || ae3 == ae4 ) {
 	if ( compareXY(ae2, ae3) == 0 || compareXY(ae3, ae4) == 0 ) {
-	  dflgm(N, M, e3, tpsc, depthLimit);
+	  dflgm(A, N, M, e3, tpsc, depthLimit, compareXY);
 	  return;
 	}
 
@@ -154,7 +157,7 @@ void tpsc(int N, int M, int depthLimit) {
 	// if ( pl <= A[N] || A[M] <= pr ) {
 	if ( compareXY(pl, A[N]) <= 0 || compareXY(A[M], pr) <= 0 ) {
 	  // ascertain that the corners are not empty
-	  dflgm(N, M, e3, tpsc, depthLimit);
+	  dflgm(A, N, M, e3, tpsc, depthLimit, compareXY);
 	  return;
 	}
 
@@ -507,59 +510,59 @@ void tpsc(int N, int M, int depthLimit) {
 	  exit(0);
 	}
     */
-	// tpsc(A, N, i, depthLimit);
-	// tpsc(A, i+1, j-1, depthLimit);
-	// tpsc(A, j, M, depthLimit);
+	// tpsc(A, N, i, depthLimit, compareXY);
+	// tpsc(A, i+1, j-1, depthLimit, compareXY);
+	// tpsc(A, j, M, depthLimit, compareXY);
 	/*
       if ( i-N < j-i ) {
-	tpsc(N, i, depthLimit);
+	tpsc(N, i, depthLimit, compareXY);
 	if ( j-i < M-j ) {
-	   tpsc(i+1, j-1, depthLimit);
+	   tpsc(i+1, j-1, depthLimit, compareXY);
 	   N = j; goto Start;
-	   // (*cut)(A, j, M, depthLimit);
+	   // (*cut)(A, j, M, depthLimit, compareXY);
 	   // return;
 	}
-	tpsc(j, M, depthLimit);
+	tpsc(j, M, depthLimit, compareXY);
 	N = i+1; M = j-1; goto Start;
-	// (*cut)(A, i+1, j-1, depthLimit);
+	// (*cut)(A, i+1, j-1, depthLimit, compareXY);
 	// return;
       }
-      tpsc(i+1, j-1, depthLimit);
+      tpsc(i+1, j-1, depthLimit, compareXY);
       if ( i-N < M-j ) {
-	tpsc(N, i, depthLimit);
+	tpsc(N, i, depthLimit, compareXY);
 	N = j; goto Start;
-	// (*cut)(A, j, M, depthLimit);
+	// (*cut)(A, j, M, depthLimit, compareXY);
 	// return;
       }
-      tpsc(j, M, depthLimit);
+      tpsc(j, M, depthLimit, compareXY);
       M = i; goto Start;
-      // (*cut)(A, N, i, depthLimit);
+      // (*cut)(A, N, i, depthLimit, compareXY);
       */
 	if ( i - N < j - i ) {
 	  if ( j - i < M - j ) {
-	    addTaskSynchronized(ll, newTask(j, M, depthLimit));
-	    addTaskSynchronized(ll, newTask(i+1,j-1, depthLimit));
+	    addTaskSynchronized(ll, newTask(A, j, M, depthLimit, compareXY));
+	    addTaskSynchronized(ll, newTask(A, i+1,j-1, depthLimit, compareXY));
 	  } else {
-	    addTaskSynchronized(ll, newTask(i+1,j-1, depthLimit));
-	    addTaskSynchronized(ll, newTask(j, M, depthLimit));
+	    addTaskSynchronized(ll, newTask(A, i+1,j-1, depthLimit, compareXY));
+	    addTaskSynchronized(ll, newTask(A, j, M, depthLimit, compareXY));
 	  }
 	  M = i;
 	  goto Start;
 	}
 	if ( j - i < M - j ) {
 	  if ( i - N < M - j) {
-	    addTaskSynchronized(ll, newTask(j, M, depthLimit));
-	    addTaskSynchronized(ll, newTask(N, i, depthLimit));
+	    addTaskSynchronized(ll, newTask(A, j, M, depthLimit, compareXY));
+	    addTaskSynchronized(ll, newTask(A, N, i, depthLimit, compareXY));
 	  } else {
-	    addTaskSynchronized(ll, newTask(N, i, depthLimit));
-	    addTaskSynchronized(ll, newTask(j, M, depthLimit));
+	    addTaskSynchronized(ll, newTask(A, N, i, depthLimit, compareXY));
+	    addTaskSynchronized(ll, newTask(A, j, M, depthLimit, compareXY));
 	  }
 	  N = i+1;
 	  M = j-1;
 	  goto Start;
 	}
-	addTaskSynchronized(ll, newTask(N, i, depthLimit));
-	addTaskSynchronized(ll, newTask(i+1,j-1, depthLimit));
+	addTaskSynchronized(ll, newTask(A, N, i, depthLimit, compareXY));
+	addTaskSynchronized(ll, newTask(A, i+1,j-1, depthLimit, compareXY));
 	N = j;
 	goto Start;
 } // end tpsc
@@ -576,30 +579,41 @@ void *myMallocSS(char* location, int size) {
   return p;
 } // end of myMalloc
 
-
+/*
   // To obtain the int n field from X: ((struct task *) X)->n
   // To obtain the int m field from X: ((struct task *) X)->m
   // To obtain the task next field from X: ((struct task *) X)->next
 struct task {
+  void **A;
   int n;
   int m;
   int dl;
+  int (*compare)();
   struct task *next;
 };
+void **getA(struct task *t) { return ((struct task *) t)->A; }
 int getN(struct task *t) { return ((struct task *) t)->n; }
 int getM(struct task *t) { return ((struct task *) t)->m; }
 int getDL(struct task *t) { return ((struct task *) t)->dl; }
+void *getXY(struct task *t) { return ((struct task *) t)->compare; }
 struct task *getNext(struct task *t) { return ((struct task *) t)->next; }
 
+void setA(struct task *t, void **A) { ((struct task *) t)->A = A; }
 void setN(struct task *t, int n) { ((struct task *) t)->n = n; }
 void setM(struct task *t, int m) { ((struct task *) t)->m = m; }
 void setDL(struct task *t, int dl) { ((struct task *) t)->dl = dl; }
+void setXY(struct task *t, int (*compare)()) { 
+  ((struct task *) t)->compare = compare; }
 void setNext(struct task *t, struct task* tn) { 
   ((struct task *) t)->next = tn; }
-struct task *newTask(int N, int M, int depthLimit) {
+
+struct task *newTask(void **A, int N, int M, 
+		     int depthLimit, int (*compare)() ) {
   struct task *t = (struct task *) 
     myMallocSS("ParFiveSort/ newTask()", sizeof (struct task));
+  setA(t, A); 
   setN(t, N); setM(t, M); setDL(t, depthLimit); setNext(t, NULL);
+  setXY(t, compare);
   return t;
 } // end newTask
 
@@ -640,7 +654,7 @@ void push(struct stack *ll, struct task *t) {
   setFirst(ll, t);
   incrementSize(ll);
 } // end push
-
+*/
 
 pthread_mutex_t condition_mutex2 = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t  condition_cond2  = PTHREAD_COND_INITIALIZER;
@@ -659,7 +673,7 @@ void addTaskSynchronized(struct stack *ll, struct task *t) {
 } // end addTaskSynchronized
 
 
-void *sortThread(void *A) { // A-argument is NOT used
+void *sortThread(void *AAA) { // AAA-argument is NOT used
   /*
   int taskCnt = 0;
   printf("Thread number: %ld #sleepers %d\n", 
@@ -681,18 +695,20 @@ void *sortThread(void *A) { // A-argument is NOT used
       pthread_mutex_unlock( &condition_mutex2 );
       break;
     }
+    void **A = getA(t);
     int n = getN(t);
     int m = getM(t);
     int depthLimit = getDL(t);
+    int (*compare)() = getXY(t);
     free(t);
     // taskCnt++;
-    tpsc(n, m, depthLimit);
+    tpsc(A, n, m, depthLimit, compare);
   }
   // printf("Exit of Thread number: %ld taskCnt: %d\n", pthread_self(), taskCnt);
   return NULL;
 } // end sortThread
 
-int partitionLeft(int N, int M) { 
+int partitionLeft(void **A, int N, int M, int (*compareXY)()) { 
   /*
     |------------------------|
     N                        M 
@@ -711,14 +727,16 @@ int partitionLeft(int N, int M) {
 
 void *partitionThreadLeft(void *ptr) {
   struct task *tx = ( struct task * ) ptr;
+  void **A = getA(tx);
   int n = getN(tx);
   int m = getM(tx);
   // int T = getDL(tx);
-  int ix = partitionLeft(n, m);
+  int (*compare)() = getXY(tx);
+  int ix = partitionLeft(A, n, m, compare);
   setN(tx, ix);
 } // end partitionThreadLeft
 
-int partitionRight(int N, int M) { 
+int partitionRight(void **A, int N, int M, int (*compareXY)()) { 
   /*
     |------------------------|
     N                        M 
@@ -746,16 +764,18 @@ int partitionRight(int N, int M) {
 
 void *partitionThreadRight(void *ptr) {
   struct task *tx = ( struct task * ) ptr;
+  void **A = getA(tx);
   int n = getN(tx);
   int m = getM(tx);
   // int T = getDL(tx);
-  int ix = partitionRight(n, m);
+  int (*compare)() = getXY(tx);
+  int ix = partitionRight(A, n, m, compare);
   setN(tx, ix);
 } // end partitionThreadRight
 
 int cut2SLimit = 2000;
-void fivesort(void **AA, int size, 
-	 int (*compar ) (const void *, const void * ),
+void fivesort(void **A, int size, 
+	 int (*compareXY ) (const void *, const void * ),
 	 int numberOfThreads) {
   /*
   // Set host & licence expiration date
@@ -795,10 +815,11 @@ void fivesort(void **AA, int size,
   }
   */
   // Proceed !
-  A = AA;
-  compareXY = compar;
+  // A = AA;
+  // compareXY = compar;
   if ( size <= cut2SLimit || numberOfThreads <= 0) {
-    tps(0, size-1);
+    tps(A, 0, size-1, compareXY);
+    return;
   }
   // tps(0, size-1);
   sleepingThreads = 0;
@@ -844,7 +865,7 @@ void fivesort(void **AA, int size,
   // if ( T <= A[N] || A[M] < T ) {
   if ( compareXY(T, A[N]) <= 0 || compareXY(A[M], T) < 0 ) {
     // cannot do first parallel partition
-    struct task *t = newTask(0, size-1, depthLimit);
+    struct task *t = newTask(A, 0, size-1, depthLimit, compareXY);
     addTaskSynchronized(ll, t);
   } else {
     /*
@@ -853,8 +874,8 @@ void fivesort(void **AA, int size,
       A[N] < T             A[e3] = T                 T<=A[M]
     */
 
-    struct task *t1 = newTask(N, e3, 0);
-    struct task *t2 = newTask(e3, M, 0);
+    struct task *t1 = newTask(A, N, e3, 0, compareXY);
+    struct task *t2 = newTask(A, e3, M, 0, compareXY);
     int errcode;
     if ( (errcode=pthread_create(&thread_id[1], NULL, 
 				 partitionThreadLeft, (void*) t1) )) {
@@ -898,9 +919,9 @@ void fivesort(void **AA, int size,
       |------------------------][----------------------------|
       N           <           m3           >=                M
      */
-    t1 = newTask(N, m3, depthLimit);
+    t1 = newTask(A, N, m3, depthLimit, compareXY);
     addTaskSynchronized(ll, t1);
-    t1 = newTask(m3+1, M, depthLimit);
+    t1 = newTask(A, m3+1, M, depthLimit, compareXY);
     addTaskSynchronized(ll, t1);
   }
 

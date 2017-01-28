@@ -1,35 +1,37 @@
 // c:/bsd/rigel/sort/C2sort
-// Date: Fri Jan 31 13:32:12 2014
+// Date: Fri Jan 31 13:32:12 2014, 2017
 // (C) OntoOO/ Dennis de Champeaux
+
+const int cut2Limit = 127;
 
 void cut2c();
 // cut2 is used as a best in class quicksort implementation 
 // with a defense against quadratic behavior due to duplicates
 // cut2 is a support function to call up the workhorse cut2c
-void cut2(int N, int M) { 
+void cut2(void **A, int N, int M, int (*compare)()) { 
   // printf("cut2 %d %d \n", N, M);
   int L = M - N;
   if ( L < cut2Limit ) { 
-    quicksort0(N, M);
+    quicksort0(A, N, M, compare);
     return;
   }
   int depthLimit = 2.5 * floor(log(L));
-  cut2c(N, M, depthLimit);
+  cut2c(A, N, M, depthLimit, compare);
 } // end cut2
 
 // Cut2c does 2-partitioning with one pivot; cut2 is NOT used
 // by SixSort and neither by FiveSort.  It is included for comparisons. 
 // Cut2c invokes dflgm when duplicates are found.
-void cut2c(int N, int M, int depthLimit) {
+void cut2c(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
   int L;
   Start:
   if ( depthLimit <= 0 ) {
-    heapc(A, N, M);
+    heapc(A, N, M, compareXY);
     return;
   }
   L = M - N;
   if ( L < cut2Limit ) { 
-    quicksort0c(N, M, depthLimit);
+    quicksort0c(A, N, M, depthLimit, compareXY);
     return;
   }
   depthLimit--;
@@ -70,7 +72,7 @@ void cut2c(int N, int M, int depthLimit) {
 	   // give up because cannot find a good pivot
 	   // dflgm is a dutch flag type of algorithm
 	   void cut2c();
-	   dflgm(N, M, e3, cut2c, depthLimit);
+	   dflgm(A, N, M, e3, cut2c, depthLimit, compareXY);
 	   return;
 	 }
 
@@ -102,11 +104,11 @@ void cut2c(int N, int M, int depthLimit) {
 	}
 	// Tail iteration
 	if ( (I - N) < (M - J) ) { // smallest one first
-	  cut2c(N, J, depthLimit);
+	  cut2c(A, N, J, depthLimit, compareXY);
 	  N = I; 
 	  goto Start;
 	}
-	cut2c(I, M, depthLimit);
+	cut2c(A, I, M, depthLimit, compareXY);
 	M = J;
 	goto Start;
 } // (*  OF cut2; *) the brackets remind that this was once Pascal code

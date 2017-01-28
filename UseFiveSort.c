@@ -583,30 +583,27 @@ void compareCut2AgainstFivesort() {
   compareAlgorithms("Compare cut2 vs fivesort", callCut2, fivesort);
 } // end compareCut2AgainstFivesort
 
-void **A;
-int (*compareXY)();
-const int cut2Limit = 127;
+// void **A;
+// int (*compareXY)();
+// const int cut2Limit = 127;
 
 void heapc();
 void quicksort0();
 void quicksort0c();
 void iswap();
 void dflgm();
-#include "C2sort"
+void cut2();
 
-void callQuicksort0(void **AA, int size, 
+void callQuicksort0(void **A, int size, 
 	int (*compar ) (const void *, const void * ) ) {
-  A = AA;
-  compareXY = compar;
-  quicksort0(0, size-1);
+
+  quicksort0(A, 0, size-1, compar);
 } // end callQuicksort0
 
 // void cut2(int N, int M);
-void callCut2(void **AA, int size, 
+void callCut2(void **A, int size, 
 	int (*compar ) (const void *, const void * ) ) {
-  A = AA;
-  compareXY = compar;
-  cut2(0, size-1);
+  cut2(A, 0, size-1, compar);
 } // end callCut2
 
 void bentley();
@@ -1043,11 +1040,10 @@ void compareBentleyAgainstFivesort() {
   }
 } // end compareBentleyAgainstFivesort
 
-void heapSort(void **a, int count);
+void heapSort(void **a, int count, int (*compar)());
 void callHeapsort(void **A, int size, 
-	 int (*compar ) (const void *, const void * ) ) {
-  compareXY = compar;
-  heapSort(A, size);
+	 int (*compar) (const void *, const void * ) ) {
+  heapSort(A, size, compar);
 } // end callHeapsort
 
 void validateFiveSortBT() {
