@@ -67,12 +67,12 @@ char* expiration = "*** License for fivesort has expired ...\n";
 // void **A;
 
 /*
-#include "Isort"
-#include "Hsort"
+#include "Isort.c"
+#include "Hsort.c"
 */
-#include "Qusort"
-#include "Dsort"
-#include "C2sort" 
+#include "Qusort.c"
+#include "Dsort.c"
+#include "C2sort.c" 
 
 
 void tpsc();

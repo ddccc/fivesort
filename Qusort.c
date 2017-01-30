@@ -2,8 +2,8 @@
 // Date: Fri Jan 31 13:32:12 2014/ Tue May 19 15:02:00 2015, 2017
 // (C) OntoOO/ Dennis de Champeaux
 
-#include "Isort" // insertionsort member
-#include "Hsort" // heapsort member
+#include "Isort.c" // insertionsort member
+#include "Hsort.c" // heapsort member
 
 // calculate the median of 3
 int med(void **A, int a, int b, int c,

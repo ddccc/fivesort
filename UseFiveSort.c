@@ -119,7 +119,7 @@ int main (int argc, char *argv[]) {
   // To ask for the license expiration date and the host
      // fivesort(0, 0, 0);
   // To check that fivesort produces a sorted array
-     // testFivesort();
+     testFivesort();
   // testBentley();
   // Ditto but using the general function testAlgorithm
      // ... and uncomment also testFiveSort2 ...
@@ -129,16 +129,16 @@ int main (int argc, char *argv[]) {
      // ... and uncomment validateXYZ ...
   // validateBentley();
   // Measure the sorting time of an algorithm
-  // timeTest();
+  timeTest();
   // Compare the speed fraction of two algorithms
      // compareFivesortAgainstXYZ();
      // ... and uncomment also compareFivesortAgainstXYZ ...
   // Whatever here:::
-     // compareQuiksort1AgainstFivesort();
-     // compareCut2AgainstFivesort();    
+     compareQuicksort0AgainstFivesort();
+     compareCut2AgainstFivesort();    
      // compareBentleyAgainstFivesort(); // on Bentley test bench
   // testQuicksort0();
-  // validateFiveSortBT();
+  validateFiveSortBT();
   return 0;
 } // end of main
 
@@ -576,7 +576,7 @@ compareFivesortAgainstXYZ() {
 void compareQuicksort0AgainstFivesort() {
   void fivesort(), callQuicksort0();
   compareAlgorithms("Compare quicksort0 vs fivesort", callQuicksort0, fivesort);
-} // end compareQuiksort1AgainstFivesort
+} // end compareQuiksort0AgainstFivesort
 
 void compareCut2AgainstFivesort() {
   void fivesort(), callCut2();

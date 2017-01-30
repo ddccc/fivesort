@@ -129,27 +129,27 @@ int main (int argc, char *argv[]) {
   // To ask for the license expiration date and the host
      // fivesort(0, 0, 0, 0);
   // To check that cut2S produces a sorted array
-     // testCut2();
+     testCut2();
   // To check that fivesort produces a sorted array
-     // testFiveSort();
+     testFiveSort();
   // Ditto but using the general function testAlgorithm
      // ... and uncomment also testFiveSort2 ...
      // testFiveSort2();
   // To check that threesort produces a sorted array
-  // testThreesort();
+  testThreesort();
   // Compare the outputs of two sorting algorithms
      validateXYZ(); // must provide an other algorithm XYZ
      // ... and uncomment validateXYZ ...
   // Measure the sorting time of an algorithm
-     // timeTest();
+     timeTest();
   // Compare the speed fraction of two algorithms
      // compareFivesortAgainstXYZ();
      // ... and uncomment also compareFivesortAgainstXYZ ...
   // Whatever here:::
-     // compareCut2AgainstThreesort();
-     // compareCut2AgainstFivesort();
-     // compareQuicksort0AgainstFivesort();
-     // validateParFiveSortBT();
+     compareCut2AgainstThreesort();
+     compareCut2AgainstFivesort();
+     compareQuicksort0AgainstFivesort();
+     validateParFiveSortBT();
   return 0;
 } // end of main
 
@@ -642,7 +642,7 @@ void addTaskSynchronized0(struct stack *ll, struct task *t)
    sequential insertionsort
  */
 
-void cut2p();
+void cut2pc();
 void *sortThread3(void *AA) { // AA-argument is NOT used
   // int taskCnt = 0;
   //  printf("Thread number: %ld #sleepers %d\n", 
@@ -670,7 +670,7 @@ void *sortThread3(void *AA) { // AA-argument is NOT used
     int (*compar)() =  getXY(t);
     free(t);
     // taskCnt++;
-    cut2p(A, n, m, depthLimit, compar);
+    cut2pc(A, n, m, depthLimit, compar);
   }
   // printf("Exit of Thread number: %ld taskCnt: %d\n", pthread_self(), taskCnt);
     return NULL;
