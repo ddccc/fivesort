@@ -1,4 +1,3 @@
-
 /*
 File: c:/bsd/rigel/sort/Licence.txt
 Date: Sat Jun 09 22:22:31 2012
@@ -129,27 +128,27 @@ int main (int argc, char *argv[]) {
   // To ask for the license expiration date and the host
      // fivesort(0, 0, 0, 0);
   // To check that cut2S produces a sorted array
-     testCut2();
+  // testCut2();
   // To check that fivesort produces a sorted array
-     testFiveSort();
+  // testFiveSort();
   // Ditto but using the general function testAlgorithm
      // ... and uncomment also testFiveSort2 ...
      // testFiveSort2();
   // To check that threesort produces a sorted array
-  testThreesort();
+  // testThreesort();
   // Compare the outputs of two sorting algorithms
-     validateXYZ(); // must provide an other algorithm XYZ
+  // validateXYZ(); // must provide an other algorithm XYZ
      // ... and uncomment validateXYZ ...
   // Measure the sorting time of an algorithm
-     timeTest();
+     // timeTest();
   // Compare the speed fraction of two algorithms
      // compareFivesortAgainstXYZ();
      // ... and uncomment also compareFivesortAgainstXYZ ...
   // Whatever here:::
-     compareCut2AgainstThreesort();
+     // compareCut2AgainstThreesort();
      compareCut2AgainstFivesort();
-     compareQuicksort0AgainstFivesort();
-     validateParFiveSortBT();
+     // compareQuicksort0AgainstFivesort();
+     // validateParFiveSortBT();
   return 0;
 } // end of main
 

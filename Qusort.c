@@ -1,9 +1,14 @@
-// c:/bsd/rigel/sort/Qusort
+// c:/bsd/rigel/sort/Qusort.c
 // Date: Fri Jan 31 13:32:12 2014/ Tue May 19 15:02:00 2015, 2017
 // (C) OntoOO/ Dennis de Champeaux
 
-#include "Isort.c" // insertionsort member
-#include "Hsort.c" // heapsort member
+
+#ifndef Qusort 
+    #define Qusort Qusort.c
+    #include "Isort.c" // insertionsort member
+    #include "Hsort.c" // heapsort member
+    #include "Dsort.c" // dflgm member
+#endif
 
 // calculate the median of 3
 int med(void **A, int a, int b, int c,
@@ -14,14 +19,19 @@ int med(void **A, int a, int b, int c,
     : compareXY( A[b], A[c] ) > 0 ? b : compareXY( A[a], A[c] ) > 0 ? c : a;
 } // end med
 
+void vswap(void **A, int N, int N3, int eq) {
+  void *t;
+  while ( 0 < eq ) { eq--; t = A[N]; A[N++] = A[N3]; A[N3++] = t; }
+}
 
+const int small = 120;
 void quicksort0c();
 // Quicksort function for invoking quicksort0c.
 void quicksort0(void **A, int N, int M, int (*compare)()) {
+  //  printf("quicksort0 N %i M %i \n", N, M);
   int L = M - N;
   if ( L <= 0 ) return;
-  // printf("quicksort0 %d %d \n", N, M);
-  if ( L <= 7 ) { 
+  if ( L < 7 ) { 
     insertionsort(A, N, M, compare);
     return;
   }
@@ -30,14 +40,15 @@ void quicksort0(void **A, int N, int M, int (*compare)()) {
 } // end quicksort0
 
 void dflgm();
-
+void insertionsort();
 // Quicksort equipped with a defense against quadratic explosion;
 // calling heapsort if depthlimit exhausted
 void quicksort0c(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
   // printf("Enter quicksort0c N: %d M: %d %d\n", N, M, depthLimit);
+  // printf(" gap %d \n", M-N);
   while ( N < M ) {
-    int L = M - N;
-    if ( L <= 7 ) {
+    int L = 1+ M - N;
+    if ( L < 7 ) {
       insertionsort(A, N, M, compareXY);
       return;
     }
@@ -47,173 +58,148 @@ void quicksort0c(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
     }
     depthLimit--;
 
-    // 7 < L
+    // 7 <= L
     int p0 = N + (L>>1); // N + L/2;
-    int pn = N;
-    int pm = M;
-    if ( 40 < L ) {
-      int d = L>>3; // L/8;
-      pn = med(A, pn, pn + d, pn + 2 * d, compareXY);
-      p0 = med(A, p0 - d, p0, p0 + d, compareXY);
-      pm = med(A, pm - 2 * d, pm - d, pm, compareXY);
- 
+    if ( 7 < L ) {
+      int pn = N;
+      int pm = M;
+      if ( 40 < L ) {
+	int d = (L-2)>>3; // L/8;
+	pn = med(A, pn, pn + d, pn + 2 * d, compareXY);
+	p0 = med(A, p0 - d, p0, p0 + d, compareXY);
+	pm = med(A, pm - 2 * d, pm - d, pm, compareXY);
+      }
+      p0 = med(A, pn, p0, pm, compareXY);
     }
-    p0 = med(A, pn, p0, pm, compareXY);
+
     /* optional check when inputs have many equal elements
     if ( compareXY(A[N], A[M]) == 0 ) {
-      dflgm(N, M, p0, quicksort0c, depthLimit,, compareXY);
+      dflgm(A, N, M, p0, quicksort0c, depthLimit, compareXY);
       return;
     } */
-    // p0 is index to 'best' pivot ...
-    
+
+    // p0 is index to 'best' pivot ...    
     iswap(N, p0, A); // ... and is put in first position
 
-    register void *p = A[N]; // pivot
-    register int i, j;
-    i = N;
-    j = M;
-    register void *ai; void *aj;
+    register void *T = A[N]; // pivot
+    register int I, J; // indices
+    register void *AI, *AJ; // array values
+    // int k;
+    // int small = 120; 
 
-    /* Split array A[N,M], N<M in two segments using pivot p; 
-       construct a partition with A[N,i), A(i,M] and N <= i <= M, and
-       N <= k <= i -> A[k] <= p  and  i < k <= M -> p < A[k];
-       Allow the worse cases: N=i or i=M.
-       Recurse on A[N,i) and A(i,M) (or in the reverse order).
-       This code does NOT do swapping; instead it disposes 
-       ai/aj in a hole created by setting aj/ai first.  
-    */
-    /* Start state:
-	  |-------------------------------|
-          N=i                           j=M
-	  N = i < j = M
-          N <= k < i -> A[k] <= p    
-          N < j < k <= M -> p < A[k]
-	  A[N] = p
-          N < i -> p < A[i]
-    */
+    if ( L <= small ) {
 
-    while ( i < j ) {
-      /*
-	  |-------o---------------(--------|
-          N       i               j        M
-	  N <= i < j <= M
-          N <= k < i -> A[k] <= p    
-          N < j < k <= M -> p < A[k]
-	  A[N] <= p
-          N < i -> p < A[i]
-          p + A[N,i) + A(i,j] + A(j,M] is a permutation of the input array
-      */
-      aj = A[j];
-      while ( compareXY(p, aj) < 0 ) { 
-        /*
-	  |-------o---------------[--------|
-          N       i               j        M
-	  N = i < j <= M or N < i <= j <= M
-          N <= k < i -> A[k] <= p    
-          N < j <= k <= M -> p < A[k]
-	  A[N] <= p
-	  N < i -> p < A[i}
-	  p + A[N,i) + A(i,M] is a permutation of the input array
-          p < aj = A[j]
-	*/
-	j--; 
-	aj = A[j]; 
+      I = N+1; J = M; 
+      int N2 = I, M2 = J, l, r, eql, eqr;
+    Left2:
+      while ( I <= J && (r = compareXY(A[I], T)) <= 0 ) {
+	  if ( 0 == r ) { iswap(N2, I, A); N2++; }
+	  I++;
       }
-      /*
-	  |-------o---------------(--------|
-          N       i               j        M
-	  N = i = j < M or N < i & = i-1 <= j <= M or N <= i < j <= M
-          N <= k < i -> A[k] <= p    
-          j < k <= M -> p < A[k]
-	  A[N] <= p
-	  N < i -> p < A[i}
-	  p + A[N,i) + A(i,M] is a permutation of the input array
-          aj = A[j] <= p
-	*/
-      if ( j <= i ) {
-	/*
-	  |-------o-----------------------|
-          N       i                       M
-	  N = i = j < M or N < i & = i-1 = j < M
-          N <= k < i -> A[k] <= p    
-          i < k <= M -> p < A[k]
-	  A[N] <= p
-	  p + A[N,i) + A(i,M] is a permutation of the input array
-	*/
-	break;
+      while ( I <= J && (r = compareXY(A[J], T)) >= 0 ) {
+	if ( 0 == r ) { iswap(M2, J, A); M2--; }
+	J--;
       }
-      // i < j 
-      A[i] = aj; // fill hole !
-      /*
-	  |-------]---------------o--------|
-          N       i               j        M
-	  N <= i < j <= M
-          N <= k <= i -> A[k] <= p    
-          j < k <= M -> p < A[k]
-	  A[N] <= p
-	  p + A[N,j) + A(j,M] is a permutation of the input array
-	  aj = A[j] <= p
-      */
-      i++; ai = A[i];
-      while ( i < j && compareXY(ai, p) <= 0 ) {
-	/*
-	  |-------]---------------o--------|
-          N       i               j        M
-	  N < i < j <= M
-          N <= k <= i -> A[k] <= p    
-          j < k <= M -> p < A[k]
-	  A[N] <= p
-	  p + A[N,j) + A(j,M] is a permutation of the input array
-	  aj = A[j] <= p
-	*/
-	i++; ai = A[i]; 
-      }
-      if ( j <= i ) {
-	/*
-	  |----------------------o--------|
-          N                     i=j       M
-	  N < i = j <= M
-          N <= k < i -> A[k] <= p    
-          j < k <= M -> p < A[k]
-	  A[N] <= p
-	  p + A[N,j) + A(j,M] is a permutation of the input array
-	*/
-	break;
-      }
-      // i < j  & p < ai = A[i] 
-      A[j] = ai;
-      j--;
-      /*
-	  |--------o--------------[--------|
-          N        i              j        M
-	  N < i <= j <= M
-          N <= k < i -> A[k] <= p    
-          j <= k <= M -> p < A[k]
-	  A[N] <= p
-          N < i -> p < ai = A[i]
-	  p + A[N,i) + A(i,M] is a permutation of the input array
-      */
-    } // end of while( i < j )
+      if ( I > J ) goto Skip2; 
+      iswap(I, J, A);
+      I++; J--;
+      goto Left2;
 
-    A[i] = p;
-    /*
-	  |--------]----------------------|
-          N        i                      M
-	  N <= i <= M
-          N <= k <= i -> A[k] <= p    
-          i < k <= M -> p < A[k]
-	  A[N] <= p
-	  A[N,i] + A(i,M] is a permutation of the input array
-    */
-
-    // Recurse on the smallest one and iterate on the other one
-    int ia = i-1; int ib = i+1; 
-    if ( i-N < M-i ) { 
-      if ( N < ia ) quicksort0c(A, N, ia, depthLimit, compareXY);  
-      N = ib; 
-    } else { 
-      if ( ib < M ) quicksort0c(A, ib, M, depthLimit, compareXY);  
-      M = ia; 
+  Skip2:
+      l = N2-N; r = I-N2;
+      eql = ( l < r ? l : r );
+      vswap(A, N, I-eql, eql); 
+      l = J+N-N2;
+      if ( 0 < l-N )  { 
+	// printf("Left recursion N %i l %i\n", N, l);
+	quicksort0c(A, N, l, depthLimit, compareXY);
+      }
+      l = M2-J; r = M-M2;
+      eqr = ( l < r ? l : r );
+      vswap(A, I, M-eqr+1, eqr);
+      // right 'recursion' tail
+      N = I + (M-M2);
+      if ( N < M ) { continue; }
+      return;
     }
-  }
+
+    // 1st round of partitioning
+	// The left segment has elements <= T
+	// The right segment has elements > T
+    /*
+	  |----------]-------------[-----------|
+	  N   <=T    I             J   >T      M   
+    */
+    J = M+1;
+    while ( compareXY(T, A[--J]) < 0 );
+    if ( N == J ) { // poor pivot  N < x -> T < A[x], suspect bad input
+      int px =  N + (L>>1); // N + L/2;
+      iswap(p0, px, A);
+      dflgm(A, N, M, px, quicksort0c, depthLimit, compareXY);
+      return;
+    }
+    AJ = A[J]; // A[J] <= T
+
+    // N < J <= M  
+    I = N+1;
+    if (J < M ) {
+      while ( compareXY(A[I], T) <= 0 ) I++;
+    }
+    else { // J = M
+      if ( compareXY(T, A[M]) == 0 ) { // bail out
+	int px =  N + (L>>1); // N + L/2;
+	iswap(p0, px, A);
+	dflgm(A, N, M, px, quicksort0c, depthLimit, compareXY);
+	return;
+      }
+      // define M2?
+      while ( I < J && compareXY(A[I], T) <= 0 ) { I++; }
+      if ( M == I ) { // all elements are <= T, suspect bad input
+	int px =  N + (L>>1); // N + L/2;
+	iswap(p0, px, A);
+	dflgm(A, N, M, px, quicksort0c, depthLimit, compareXY);
+	return;
+      }
+    }
+
+    if ( I == J ) {
+      I++; 
+      goto Skip;
+    }
+    if ( I < J ) { // swap
+      A[J] = A[I]; A[I] = AJ;
+      if ( I+1 == J ) {
+	J--; I++;
+	goto Skip;
+      }
+    } else { // J+1 = I }
+      goto Skip; 
+    }
+    // fall through
+
+  Left: 
+    /*
+	  |----------]-------------[-----------|
+	  N   <=T    I             J   >T      M   
+    */
+    while ( compareXY(A[++I],  T) <= 0 ); 
+    if ( J < I ) goto Skip;
+    AI = A[I];
+    while ( compareXY(T, A[--J]) < 0 ); 
+    AJ = A[J];
+    if ( I < J ) { // swap
+      A[I] = AJ; A[J] = AI;
+      goto Left;
+    }
+ Skip:
+    // Tail iteration
+    if ( (I - N) < (M - J) ) { // smallest one first
+      quicksort0c(A, N, J, depthLimit, compareXY);
+      N = I; 
+    } else {
+      quicksort0c(A, I, M, depthLimit, compareXY);
+      M = J;
+    }
+  } // end of while loop
 } // end of quicksort0c
+
