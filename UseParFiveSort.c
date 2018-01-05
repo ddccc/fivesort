@@ -1,4 +1,3 @@
-
 /*
 File: c:/bsd/rigel/sort/Licence.txt
 Date: Sat Jun 09 22:22:31 2012
@@ -82,12 +81,13 @@ void compareCut2AgainstFivesort();
 void compareQuicksort0AgainstFivesort();
 // void compareFivesortAgainstXYZ(); // for if you use this function
 void fivesort(void **AA, int size, 
-	      int (*compar ) (const void *, const void * ),
+	      int (*compar) (const void *, const void * ),
 	      int numberOfThreads);
 void threesort(void **AA, int size, 
-	       int (*compar ) (const void *, const void * ),
+	       int (*compar) (const void *, const void * ),
 	       int num);
-void dflgm(int N, int M, int pivotx, void (*cut)(), int depthLimit);
+void dflgm(void **AA, int N, int M, int pivotx, void (*cut)(), 
+	   int depthLimit, int (*compar)() );
 void callCut2(void **AA, int siz, 
  	       int (*compar ) (const void *, const void * ) );
 void validateParFiveSortBT();
@@ -128,16 +128,16 @@ int main (int argc, char *argv[]) {
   // To ask for the license expiration date and the host
      // fivesort(0, 0, 0, 0);
   // To check that cut2S produces a sorted array
-     // testCut2();
+  // testCut2();
   // To check that fivesort produces a sorted array
-     // testFiveSort();
+  // testFiveSort();
   // Ditto but using the general function testAlgorithm
      // ... and uncomment also testFiveSort2 ...
      // testFiveSort2();
   // To check that threesort produces a sorted array
   // testThreesort();
   // Compare the outputs of two sorting algorithms
-     validateXYZ(); // must provide an other algorithm XYZ
+  // validateXYZ(); // must provide an other algorithm XYZ
      // ... and uncomment validateXYZ ...
   // Measure the sorting time of an algorithm
      // timeTest();
@@ -146,7 +146,7 @@ int main (int argc, char *argv[]) {
      // ... and uncomment also compareFivesortAgainstXYZ ...
   // Whatever here:::
      // compareCut2AgainstThreesort();
-     // compareCut2AgainstFivesort();
+     compareCut2AgainstFivesort();
      // compareQuicksort0AgainstFivesort();
      // validateParFiveSortBT();
   return 0;
@@ -164,12 +164,13 @@ void *myMalloc(char* location, int size) {
 
 // fillarray assigns random values to the int-field of our objects
 void fillarray(void **A, int lng, int startv) {
+  const int range = 1024*1024*32;
   int i;
   srand(startv);
   struct intval *pi;
   for ( i = 0; i < lng; i++) {
     pi = (struct intval *)A[i];
-    pi->val = rand(); 
+    pi->val = rand()%range; 
   }
 } // end of fillarray
 
@@ -603,8 +604,8 @@ void compareQuicksort0AgainstFivesort() {
 
 
 // Here are global entities used throughout
-void **A;
-int (*compareXY)();
+// void **A;
+// int (*compareXY)();
 int sleepingThreads0;
 struct stack *llx;
 
@@ -613,9 +614,11 @@ struct stack *newStack();
 struct task *newTask();
 void push(struct stack *ll, struct task *t);
 struct task *pop();
+void **getA(struct task *t);
 int getN(struct task *t);
 int getM(struct task *t);
 int getDL(struct task *t);
+void *getXY(struct task *t);
 
 pthread_mutex_t condition_mutex3 = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t  condition_cond3  = PTHREAD_COND_INITIALIZER;
@@ -638,8 +641,8 @@ void addTaskSynchronized0(struct stack *ll, struct task *t)
    sequential insertionsort
  */
 
-void cut2p();
-void *sortThread3(void *A) { // A-argument is NOT used
+void cut2pc();
+void *sortThread3(void *AA) { // AA-argument is NOT used
   // int taskCnt = 0;
   //  printf("Thread number: %ld #sleepers %d\n", 
   //         pthread_self(), sleepingThreads);
@@ -659,32 +662,34 @@ void *sortThread3(void *A) { // A-argument is NOT used
       pthread_mutex_unlock( &condition_mutex3 );
       break;
     }
+    void **A = getA(t);
     int n = getN(t);
     int m = getM(t);
     int depthLimit = getDL(t);
+    int (*compar)() =  getXY(t);
     free(t);
     // taskCnt++;
-    cut2p(n, m, depthLimit);
+    cut2pc(A, n, m, depthLimit, compar);
   }
   // printf("Exit of Thread number: %ld taskCnt: %d\n", pthread_self(), taskCnt);
     return NULL;
  }  // end sortThread3
 
 extern int cut2SLimit; //  = 2000;
-void threesort(void **AA, int size, 
+void threesort(void **A, int size, 
 	  int (*compar ) (const void *, const void * ),
 	  int num) {
   if ( size <= cut2SLimit || num <= 0) {
-    callCut2(AA, size, compar);
+    callCut2(A, size, compar);
     return;
   }
   sleepingThreads0 = 0;
   NUMTHREADS = num;
-  A = AA;
-  compareXY = compar;
+  // A = AA;
+  // compareXY = compar;
   llx = newStack();
   int depthLimit = 2.5 * floor(log(size));
-  struct task *t = newTask(0, size-1, depthLimit);
+  struct task *t = newTask(A, 0, size-1, depthLimit, compar);
   addTaskSynchronized0(llx, t);
 
   pthread_t thread_id[NUMTHREADS];
@@ -711,19 +716,17 @@ int cut2SLimit2 = 1000;
 
 void cut2pc();
 void cut2();
-void cut2p(int N, int M) {
+void cut2p(void **A, int N, int M, int (*compar)()) {
   int L = M-N;
   if ( L <= cut2SLimit ) { 
-    cut2(N, M);
+    cut2(A, N, M, compar);
     return;
   }
   int depthLimit = 2.5 * floor(log(L));
-  cut2pc(N, M, depthLimit);
+  cut2pc(A, N, M, depthLimit, compar);
 }
 // multi threaded 4-layered Quicksort
 
-// const int cut2Limit = 127;
-// #include "C2sort"
 void heapc();
 void quicksort0();
 void quicksort0c();
@@ -734,16 +737,16 @@ void cut2c();
 void addTaskSynchronized();
 
 // cut2pc is pretty close to parallel FourSort
-void cut2pc(int N, int M, int depthLimit) {
+void cut2pc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
 
  Loop:
 	if ( depthLimit <= 0 ) {
-	  heapc(A, N, M);
+	  heapc(A, N, M, compareXY);
 	  return;
 	}
 	int L = M - N;
 	if ( L <= cut2SLimit ) { 
-	  cut2c(N, M, depthLimit);
+	  cut2c(A, N, M, depthLimit, compareXY);
 	  return;
 	}
 	depthLimit--;
@@ -752,7 +755,7 @@ void cut2pc(int N, int M, int depthLimit) {
         int sixth = (M - N + 1) / 6;
         int e1 = N  + sixth;
         int e5 = M - sixth;
-        int e3 = (N+M) / 2; // The midpoint
+        int e3 = N + L/2; // (N+M) / 2; // The midpoint
         int e4 = e3 + sixth;
         int e2 = e3 - sixth;
 
@@ -784,7 +787,7 @@ void cut2pc(int N, int M, int depthLimit) {
 	   // give up because cannot find a good pivot
 	   // dflgm is a dutch flag type of algorithm
 	   void cut2c();
-	   dflgm(N, M, e3, cut2c, depthLimit);
+	   dflgm(A, N, M, e3, cut2c, depthLimit, compareXY);
 	   return;
 	 }
 
@@ -816,29 +819,25 @@ void cut2pc(int N, int M, int depthLimit) {
 	if ( (I - N) < (M - J) ) { // smallest one first
 	  // cut2Pc(N, J, depthLimit);
 	  // N = I; 
-	  addTaskSynchronized(llx, newTask(I, M, depthLimit));
+	  addTaskSynchronized(llx, newTask(A, I, M, depthLimit, compareXY));
 	  M = J;
 	  goto Loop;
 	}
 	// cut2Pc(I, M, depthLimit);
 	// M = J;
-	addTaskSynchronized(llx, newTask(N, J, depthLimit));
+	addTaskSynchronized(llx, newTask(A, N, J, depthLimit, compareXY));
 	N = I;
 	goto Loop;
 } // (*  OF cut2p; *) ... the brackets remind that this was Pascal code
 
 // invoking 3-layered quicksort
-void callCut2(void **AA, int siz, int (*compar ) () ) {
-  A = AA;
-  compareXY = compar;
-  cut2(0, siz -1);
+void callCut2(void **A, int siz, int (*compar ) () ) {
+  cut2(A, 0, siz -1, compar);
 } // end callCut2
 
-void quicksort0(int N, int M);
-void callQuicksort0(void **AA, int size, int (*compar ) () ) {
-  A = AA;
-  compareXY = compar;
-  quicksort0(0, size-1);
+void quicksort0(void **A, int N, int M, int (*compar)());
+void callQuicksort0(void **A, int size, int (*compar)() ) {
+  quicksort0(A, 0, size-1, compar);
 } // end callQuicksort0
 
 
@@ -998,11 +997,10 @@ void slopes(void **A, int n, int m, int tweak) {
   dither(A, n);
 } // end slopes
 
-void heapSort(void **a, int count);
+void heapSort(void **a, int count, int (*compar)());
 void callHeapsort(void **A, int size, 
-	 int (*compar ) (const void *, const void * ) ) {
-  compareXY = compar;
-  heapSort(A, size);
+	 int (*compar) (const void *, const void * ) ) {
+  heapSort(A, size, compar);
 } // end callHeapsort
 
 void validateParFiveSortBT() {
