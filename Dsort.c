@@ -23,10 +23,10 @@ void dflgm(void **A, int N, int M, int pivotx, void (*cut)(),
       lw < x < up  ==> A[x] = p3
       j < x <= M & ==> p3 < A[x] 
     */
-  p3 = A[pivotx]; // There IS a middle value somewhere:
-  // store p3 temporarily; A[N] will be replaced at the end
-  // x is the wack-a-mole item
-  x = A[N]; A[N] = p3; i++; 
+  x = A[N]; // roving variable, the wack-a-mole item
+  p3 = A[N] = A[pivotx]; // There IS a middle value somewhere:
+  // p3 is temporarily also in A[N]; will be replaced at the end
+  i++; 
   r = compareXY(x, p3);
   // if ( x < p3 ) goto L0;
   if ( r < 0 ) goto L0;
