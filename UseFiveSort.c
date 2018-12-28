@@ -622,8 +622,8 @@ void callBentley(void **A, int N, int M) {
 #define inline
 #endif
 
-static inline char	*med33 _PARAMS((char *, char *, char *, int (*)()));
-static inline void	 swapfunc _PARAMS((char *, char *, int, int));
+// static inline char	*med33 _PARAMS((char *, char *, char *, int (*)()));
+// static inline void	 swapfunc _PARAMS((char *, char *, int, int));
 
 #define min(a, b)	(a) < (b) ? a : b
 
