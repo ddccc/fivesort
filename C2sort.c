@@ -84,8 +84,8 @@ void cut2c(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
 	I= N;
 	J= M;
 
-	// The left segment has elements < T
-	// The right segment has elements >= T
+	// The left segment has elements <= T
+	// The right segment has elements > T
   Left:
 	while ( compareXY(A[++I], T) <= 0 ); 
 	AI = A[I];
