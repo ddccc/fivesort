@@ -94,8 +94,8 @@ void cut2fc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
      goto Skip;
 
 
-     // The left segment has elements < T
-     // The right segment has elements >= T
+     // The left segment has elements <= T
+     // The right segment has elements > T
      // Proceed with fast loops
   Left:
 	while ( compareXY(A[++I], T) <= 0 ); 
