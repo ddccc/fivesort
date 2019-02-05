@@ -29,7 +29,7 @@ without specific prior written permission of the copyright holder.
  
 THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS", WITHOUT WARRANTY
 OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PRTICULAR PURPOSE AND
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT
 HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
@@ -501,7 +501,7 @@ void compareAlgorithms0(char *label, int siz, int seedLimit, void (*alg1)(), voi
   int z;
   int limit = 1024 * 1024 * 16 + 1;
   while (siz <= limit) {
-    printf("%s %d %s %d %s", "siz: ", siz, " seedLimit: ", seedLimit, "\n");
+    printf("siz: %d seedLimit: %d\n", siz, seedLimit);
     struct intval *pi;
     void **A = myMalloc("compareAlgorithms0 1", sizeof(pi) * siz);
     // construct array
@@ -513,10 +513,9 @@ void compareAlgorithms0(char *label, int siz, int seedLimit, void (*alg1)(), voi
     // warm up the process
     for (seed = 0; seed < seedLimit; seed++) 
       fillarray(A, siz, seed);
-    int zLimit = 6; // even
-    int alg1Times[zLimit-1];
-    int alg2Times[zLimit-1];
-    for (z = 0; z < zLimit; z++) { // repeat to check stability
+    int repeats = 3;
+    int totalAlg1 = 0; int totalAlg2 = 0;
+    for (z = 0; z < repeats; z++) { // repeat to check stability
       alg1Time = 0; alg2Time = 0;
       int TFill = clock();
       for (seed = 0; seed < seedLimit; seed++) 
@@ -528,28 +527,24 @@ void compareAlgorithms0(char *label, int siz, int seedLimit, void (*alg1)(), voi
 	(*alg1)(A, siz, compareIntVal); 
       }
       alg1Time = clock() - T - TFill;
-      if ( 0 < z ) add(z-1, alg1Time, alg1Times);
+      totalAlg1 += alg1Time;
       T = clock();
       for (seed = 0; seed < seedLimit; seed++) { 
 	fillarray(A, siz, seed);
 	(*alg2)(A, siz, compareIntVal);
       }
       alg2Time = clock() - T - TFill;
-      if ( 0 < z ) add(z-1, alg2Time, alg2Times);
-      printf("%s %d %s", "siz: ", siz, " ");
-      printf("%s %d %s", "alg1Time: ", alg1Time, " ");
-      printf("%s %d %s", "alg2Time: ", alg2Time, " ");
-      float frac = 0;
-      if ( alg1Time != 0 ) frac = alg2Time / ( 1.0 * alg1Time );
-      printf("%s %f %s", "frac: ", frac, "\n");
+      alg2Time = clock() - T - TFill;
+      totalAlg2 += alg2Time;
     }
-    int middle = zLimit/2 - 1;
-    int alg1Middle = alg1Times[middle];
-    int alg2Middle = alg2Times[middle];
-    printf("alg1Middle %d alg2Middle %d\n", alg1Middle, alg2Middle);
-    float fracm = 0;
-    if ( alg1Middle != 0 ) fracm = alg2Middle/ (1.0 * alg1Middle);
-    printf("siz: %d ratio: %f\n", siz, fracm);
+    totalAlg1 = totalAlg1/repeats;
+    totalAlg2 = totalAlg2/repeats;
+    printf("siz: %d ", siz);
+    printf("totalAlg1: %d ", totalAlg1);
+    printf("totalAlg2: %d ", totalAlg2);
+    float frac = 0;
+    if ( totalAlg1 != 0 ) frac = totalAlg2 / ( 1.0 *  totalAlg1 );
+    printf("frac: %f\n", frac);
 
     // free array
     for (i = 0; i < siz; i++) {
