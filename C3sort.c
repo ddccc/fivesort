@@ -404,7 +404,8 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
 	if ( lw < i ) { i--; goto done;	}
 	goto rightClosedAIM;
  done:
-	iswap(N, i--, A); iswap(M, j++, A); // put the pivots in place
+	// iswap(N, i--, A); iswap(M, j++, A); // put the pivots in place
+	iswap(N, i, A); i--; iswap(M, j, A); j++;
     /*
       |---]---------[---------|
       N   i         j         M

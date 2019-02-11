@@ -730,11 +730,13 @@ void cut2p(void **A, int N, int M, int (*compar)()) {
 void heapc();
 void quicksort0();
 void quicksort0c();
-void iswap();
+// void iswap();
 void dflgm();
 void cut2();
 void cut2c();
 void addTaskSynchronized();
+
+#define iswap(p, q, A) { void *t3t = A[p]; A[p] = A[q]; A[q] = t3t; }
 
 // cut2pc is pretty close to parallel FourSort
 void cut2pc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
@@ -804,13 +806,15 @@ void cut2pc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
 	// AI = A[I];
 	// if (AI < T) goto Left;
 	// if ( compareXY(AI,  T) < 0 ) goto Left;
-	while ( compareXY(A[++I],  T) < 0 ); AI = A[I];
+	while ( compareXY(A[++I],  T) < 0 ); 
+	AI = A[I];
 // Right:
 	// J = J - 1;
 	// AJ = A[J];
 	// if ( T <= AJ ) goto Right;
 	// if ( compareXY(T, AJ) <= 0 ) goto Right;
-	while ( compareXY(T, A[--J]) <= 0 ); AJ = A[J];
+	while ( compareXY(T, A[--J]) <= 0 ); 
+	AJ = A[J];
 	if ( I < J ) {
 	  A[I] = AJ; A[J] = AI;
 	  goto Left;

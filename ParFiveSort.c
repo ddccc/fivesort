@@ -352,12 +352,14 @@ void fivesort(void **A, int size,
       // swap the two middle segments
       if ( b <= c ) {
 	// printf("b <= c\n");
-	for ( k = 0; k < b; k++ ) iswap(e3-k, i2-k, A);
+	for ( k = 0; k < b; k++ ) // iswap(e3-k, i2-k, A);
+	  { int xx = e3-k, yy = i2-k; iswap(xx, yy, A); } 
 	m3 = i2 - b;
       }
       else {
 	// printf("c < b\n");
-	for ( k = 0; k < c+1; k++ ) iswap(middle2+k, i1+1+k, A);
+	for ( k = 0; k < c+1; k++ ) // iswap(middle2+k, i1+1+k, A);
+	  { int xx = middle2+k, yy = i1+1+k; iswap(xx, yy, A); } 
 	m3 = i1 + c+1;
       }
     }
