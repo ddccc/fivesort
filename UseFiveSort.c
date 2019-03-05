@@ -1,4 +1,4 @@
-/*
+/* 
 File: c:/bsd/rigel/sort/Licence.txt
 Date: Sat Dec 28 15:43:13 2013
 
@@ -120,13 +120,13 @@ int main (int argc, char *argv[]) {
   // To ask for the license expiration date and the host
      // fivesort(0, 0, 0);
   // To check that fivesort produces a sorted array
-  // testFivesort();
+  testFivesort();
   // testBentley();
   // Ditto but using the general function testAlgorithm
      // ... and uncomment also testFiveSort2 ...
      // testFiveSort2();
   // Compare the outputs of two sorting algorithms
-  // validateXYZ(); // must provide another algorithm XYZ
+  validateXYZ(); // must provide another algorithm XYZ
      // ... and uncomment validateXYZ ...
   // validateBentley();
   // Measure the sorting time of an algorithm
@@ -136,7 +136,7 @@ int main (int argc, char *argv[]) {
      // ... and uncomment also compareFivesortAgainstXYZ ...
   // Whatever here:::
   // compareQuicksort0AgainstFivesort();
-  compareCut2AgainstFivesort();    
+  // compareCut2AgainstFivesort();    
   // compareBentleyAgainstFivesort(); // on Bentley test bench
   // testQuicksort0();
   // validateFiveSortBT();
@@ -200,8 +200,8 @@ void check2(void **A, int N, int M) {
 
 // initializing an array, sort it and check it
 void testFivesort() {
-  // int siz = 1024 * 1024;
-  int siz = 1024*64;
+  int siz = 1024 * 1024 * 16;
+  // int siz = 1024*64;
   printf("Running testFivesort on size %d ...\n", siz);
   // create array
   struct intval *pi;
@@ -595,7 +595,7 @@ void quicksort0();
 void quicksort0c();
 void iswap();
 void dflgm();
-void cut2f();
+void cut2();
 
 void callQuicksort0(void **A, int size, 
 	int (*compar ) (const void *, const void * ) ) {
@@ -605,7 +605,7 @@ void callQuicksort0(void **A, int size,
 // void cut2(int N, int M);
 void callCut2(void **A, int size, 
 	int (*compar ) (const void *, const void * ) ) {
-  cut2f(A, 0, size-1, compar);
+  cut2(A, 0, size-1, compar);
 } // end callCut2
 
 void bentley();

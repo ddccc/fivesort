@@ -4,7 +4,7 @@
    headed by fivesort
 */
 
-// const int cut3PLimit = 3000;
+const int cut3PLimit = 1800;
 
 /*
 #include "Isort.c"
@@ -18,7 +18,7 @@ void tpsc();
 void tps(void **A, int N, int M, int (*compar)()) {
   int L = M - N;
   if ( L < cut3PLimit ) { 
-    cut2f(A, N, M, compar);
+    cut2(A, N, M, compar);
     return;
   }
   int depthLimit = 2.5 * floor(log(L));
@@ -40,10 +40,13 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
   }
   int L = M - N;
   if ( L < cut3PLimit ) {
-    cut2fc(A, N, M, depthLimit, compareXY);
+    cut2c(A, N, M, depthLimit, compareXY);
     return;
   }
   depthLimit--;
+
+ const int small = 4200;
+  if ( L < small ) { // use 5 elements for sampling
         int sixth = (L + 1) / 6;
         int e1 = N  + sixth;
         int e5 = M - sixth;
@@ -67,35 +70,64 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
 	// ... and reassign
 	A[e1] = ae1; A[e2] = ae2; A[e3] = ae3; A[e4] = ae4; A[e5] = ae5;
 
-	// Fix end points
-	if ( compareXY(ae1, A[N]) < 0 ) iswap(N, e1, A);
-	if ( compareXY(A[M], ae5) < 0 ) iswap(M, e5, A);
-
 	void tpsc();
 	// if ( ae2 == ae3 || ae3 == ae4 ) {
 	if ( compareXY(ae2, ae3) == 0 || compareXY(ae3, ae4) == 0 ) {
+	  // Give up, cannot find good pivots
 	  dflgm(A, N, M, e3, tpsc, depthLimit, compareXY);
 	  return;
 	}
+	// Fix end points
+	iswap(N, e2, A); iswap(M, e4, A);
 
-	pl = A[e2]; pr = A[e4];
-	// if ( pl <= A[N] || A[M] <= pr ) {
-	if ( compareXY(pl, A[N]) <= 0 || compareXY(A[M], pr) <= 0 ) {
-	  // ascertain that the corners are not empty
-	  dflgm(A, N, M, e3, tpsc, depthLimit, compareXY);
-	  return;
-	}
+	pl = A[N]; pr = A[M]; // they are there temporarily
 
 	// initialize running indices
 	i = N+1; j = M-1; 
-	lw = e3; 
-	// iswap(e3, lw, A);
-	up = lw+1; lw--;
+	lw = e3-1; up = e3+1;
 
 	// while ( A[i] < pl ) i++;
 	while ( compareXY(A[i], pl) < 0 ) i++;
 	// while ( pr < A[j] ) j--;
 	while ( compareXY(pr, A[j]) < 0 ) j--;
+
+ } else { // small <= L
+     i = N; j = M;
+     int middlex = N + (L>>1); // N + L/2
+
+    int k, N1, M1; // for sampling
+    int probeLng = sqrt(L); 
+    int halfSegmentLng = probeLng >> 1; // probeLng/2;
+    int third = probeLng/3;
+    N1 = middlex - halfSegmentLng; //  N + (L>>1) - halfSegmentLng;
+    M1 = N1 + probeLng - 1;
+    int offset = L/probeLng;  
+
+    // assemble the mini array [N1, M1]
+    for (k = 0; k < probeLng; k++) // iswap(N1 + k, N + k * offset, A);
+    { int xx = N1 + k, yy = N + k * offset; iswap(xx, yy, A); }
+    // sort this mini array to obtain good pivots
+    quicksort0(A, N1, M1, compareXY); 
+
+    lw = N1+third; up = M1-third;
+    pl = A[lw]; pr = A[up];
+    if ( compareXY(pl, A[middlex]) == 0 || 
+	 compareXY( A[middlex], pr) == 0 ) {
+	  // Give up, cannot find good pivots
+	  dflgm(A, N, M, middlex, tpsc, depthLimit, compareXY);
+	  return;
+    }
+    // Swap these two segments to the corners
+    for ( k = N1; k <= lw-1; k++ ) {
+      iswap(k, i, A); i++;
+    }
+    // i--;
+    for ( k = M1; up+1 <= k; k--) {
+      iswap(k, j, A); j--;
+    }
+    // j++;
+    iswap(N, lw, A); iswap(M, up, A); // they are there temporarily 
+  }
 
 	/* 
 	  |)----------(--)-------------(|

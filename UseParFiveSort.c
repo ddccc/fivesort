@@ -130,14 +130,14 @@ int main (int argc, char *argv[]) {
   // To check that cut2S produces a sorted array
   // testCut2();
   // To check that fivesort produces a sorted array
-  // testFiveSort();
+  testFiveSort();
   // Ditto but using the general function testAlgorithm
      // ... and uncomment also testFiveSort2 ...
      // testFiveSort2();
   // To check that threesort produces a sorted array
   // testThreesort();
   // Compare the outputs of two sorting algorithms
-  // validateXYZ(); // must provide an other algorithm XYZ
+  validateXYZ(); // must provide an other algorithm XYZ
      // ... and uncomment validateXYZ ...
   // Measure the sorting time of an algorithm
      // timeTest();
@@ -146,7 +146,7 @@ int main (int argc, char *argv[]) {
      // ... and uncomment also compareFivesortAgainstXYZ ...
   // Whatever here:::
      // compareCut2AgainstThreesort();
-     compareCut2AgainstFivesort();
+     // compareCut2AgainstFivesort();
      // compareQuicksort0AgainstFivesort();
      // validateParFiveSortBT();
   return 0;

@@ -1,4 +1,3 @@
-
 /*
 Copyright (c) 2013, Dennis de Champeaux.  All rights reserved.
 
@@ -67,7 +66,8 @@ char* expiration = "*** License for fivesort has expired ...\n";
 #include "Dsort.c"
 #include "C2fsort.c" 
 */
-#include "C2fsort.c" 
+#include "Qusort.c"
+#include "C2sort.c" 
 #include "C3sort.c" 
 
 

@@ -1,5 +1,5 @@
-/* 
-Copyright (c) 2013, Dennis de Champeaux.  All rights reserved.
+/*
+Copyright (c) 2013, Dennis de Champea ux.  All rights reserved.
 
 The copyright holders hereby grant to any person obtaining a copy of
 this software (the "Software") and/or its associated documentation
@@ -58,9 +58,6 @@ OTHER DEALINGS WITH THE SOFTWARE OR DOCUMENTATION.
 #include <pthread.h>
 #include <math.h> 
 
-const int cut3PLimit = 3000;
-// const int cut2Limit = 127;
-
 char* expiration = "*** License for fivesort has expired ...\n";
 
 #define errexit(code,str)                          \
@@ -81,7 +78,8 @@ int NUMTHREADS;
 #include "Dsort.c"
 #include "C2sort.c"
 */
-#include "C2fsort.c"
+#include "Qusort.c"
+#include "C2sort.c"
 #include "Qstack.c"
 
 struct stack *ll;
@@ -264,7 +262,7 @@ void fivesort(void **A, int size,
   // A = AA;
   // compareXY = compar;
   if ( size <= cut2SLimit || numberOfThreads <= 0) {
-    cut2f(A, 0, size-1, compareXY);
+    cut2(A, 0, size-1, compareXY);
     return;
   }
   // tps(0, size-1);

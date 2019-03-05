@@ -4,9 +4,9 @@
    headed by fivesort
 */
 
-const int cut3Limit = 3000;
-// const int cut2Limit = 127;
-
+// const int cut3Limit = 1900; // 4.19286e+08 clocktime 14295
+const int cut3Limit = 1800; // 4.19413e+08 clocktime 14202
+// const int cut3Limit = 1700; // 4.19537e+08 clocktime 14271
 
 // Here more global entities used throughout
 // int (*compareXY)();
@@ -25,7 +25,7 @@ void tpsc();
 void tps(void **A, int N, int M, int (*compareXY)() ) {
   int L = M - N;
   if ( L < cut3Limit ) { 
-    cut2f(A, N, M, compareXY);
+    cut2(A, N, M, compareXY);
     return;
   }
   int depthLimit = 2.5 * floor(log(L));
@@ -47,10 +47,18 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
   }
   int L = M - N;
   if ( L < cut3Limit ) {
-    cut2fc(A, N, M, depthLimit, compareXY);
+    cut2c(A, N, M, depthLimit, compareXY);
     return;
   }
   depthLimit--;
+
+  // const int small = 5000; // 4.19224e+08 clocktime 15222
+  // const int small = 4300; //  4.19169e+08 clocktime 14299
+  const int small = 4200; // 4.19153e+08 clocktime 14174 14224
+  // const int small = 4100; //  4.19135e+08 clocktime 14274
+  // const int small = 4000; // 4.19117e+08 clocktime 14352
+  // const int small = 3000; // 4.18337e+08 clocktime 14767
+  if ( L < small ) { // use 5 elements for sampling
         int sixth = (L + 1) / 6;
         int e1 = N  + sixth;
         int e5 = M - sixth;
@@ -95,7 +103,44 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
 	// while ( pr < A[j] ) j--;
 	while ( compareXY(pr, A[j]) < 0 ) j--;
 
-	/* 
+ } else { // small <= L
+     i = N; j = M;
+     int middlex = N + (L>>1); // N + L/2
+
+    int k, N1, M1; // for sampling
+    int probeLng = sqrt(L); 
+    int halfSegmentLng = probeLng >> 1; // probeLng/2;
+    int third = probeLng/3;
+    N1 = middlex - halfSegmentLng; //  N + (L>>1) - halfSegmentLng;
+    M1 = N1 + probeLng - 1;
+    int offset = L/probeLng;  
+
+    // assemble the mini array [N1, M1]
+    for (k = 0; k < probeLng; k++) // iswap(N1 + k, N + k * offset, A);
+    { int xx = N1 + k, yy = N + k * offset; iswap(xx, yy, A); }
+    // sort this mini array to obtain good pivots
+    quicksort0(A, N1, M1, compareXY); 
+
+    lw = N1+third; up = M1-third;
+    pl = A[lw]; pr = A[up];
+    if ( compareXY(pl, A[middlex]) == 0 || 
+	 compareXY( A[middlex], pr) == 0 ) {
+	  // Give up, cannot find good pivots
+	  dflgm(A, N, M, middlex, tpsc, depthLimit, compareXY);
+	  return;
+    }
+    // Swap these two segments to the corners
+    for ( k = N1; k <= lw-1; k++ ) {
+      iswap(k, i, A); i++;
+    }
+    // i--;
+    for ( k = M1; up+1 <= k; k--) {
+      iswap(k, j, A); j--;
+    }
+    // j++;
+    iswap(N, lw, A); iswap(M, up, A); // they are there temporarily 
+  } 
+        /* 
 	  |)----------(--)-------------(|
 	 N i         lw  up            j M
 	  N < x < i -> A[x] < pl
