@@ -4,7 +4,7 @@
    headed by fivesort
 */
 
-const int cut3PLimit = 1800;
+const int cut3PLimit = 1750;
 
 /*
 #include "Isort.c"
@@ -45,7 +45,7 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
   }
   depthLimit--;
 
- const int small = 4200;
+ const int small = 4400;
   if ( L < small ) { // use 5 elements for sampling
         int sixth = (L + 1) / 6;
         int e1 = N  + sixth;
@@ -107,7 +107,16 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
     for (k = 0; k < probeLng; k++) // iswap(N1 + k, N + k * offset, A);
     { int xx = N1 + k, yy = N + k * offset; iswap(xx, yy, A); }
     // sort this mini array to obtain good pivots
-    quicksort0(A, N1, M1, compareXY); 
+    if ( probeLng < 120 ) quicksort0c(A, N1, M1, depthLimit, compareXY); else {
+    // protect against constant arrays
+    int p0 = N1 + (probeLng>>1);
+    int pn = N1, pm = M1, d = (probeLng-3)>>3;
+    pn = med(A, pn, pn + d, pn + 2 * d, compareXY);
+    p0 = med(A, p0 - d, p0, p0 + d, compareXY);
+    pm = med(A, pm - 2 * d, pm - d, pm, compareXY);
+    p0 = med(A, pn, p0, pm, compareXY);
+    dflgm(A, N1, M1, p0, quicksort0c, depthLimit, compareXY);
+  }
 
     lw = N1+third; up = M1-third;
     pl = A[lw]; pr = A[up];
