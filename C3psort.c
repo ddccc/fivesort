@@ -4,7 +4,7 @@
    headed by fivesort
 */
 
-const int cut3PLimit = 1750;
+const int cut3PLimit = 1875;
 
 /*
 #include "Isort.c"
@@ -96,7 +96,7 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
      int middlex = N + (L>>1); // N + L/2
 
     int k, N1, M1; // for sampling
-    int probeLng = sqrt(L); 
+    int probeLng = sqrt(L/7); 
     int halfSegmentLng = probeLng >> 1; // probeLng/2;
     int third = probeLng/3;
     N1 = middlex - halfSegmentLng; //  N + (L>>1) - halfSegmentLng;

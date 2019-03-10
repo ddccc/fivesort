@@ -4,10 +4,12 @@
    headed by fivesort
 */
 
+// const int cut3Limit = 1900; // 4.18122e+08 clocktime 9587
+const int cut3Limit = 1875; //    4.18155e+08 clocktime 9531
+// const int cut3Limit = 1850; // 4.18192e+08 clocktime 9537
+// const int cut3Limit = 1800; // 4.18257e+08 clocktime 9537
+// const int cut3Limit = 1750; // 4.18327e+08 clocktime 9553
 
-// const int cut3Limit = 1800; // 4.19343e+08 clocktime 27406
-const int cut3Limit = 1750; // 4.19401e+08 clocktime 28378
-// const int cut3Limit = 1700; // 4.19457e+08 clocktime 28393
 
 // Here more global entities used throughout
 // int (*compareXY)();
@@ -109,7 +111,7 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
      int middlex = N + (L>>1); // N + L/2
 
     int k, N1, M1; // for sampling
-    int probeLng = sqrt(L); 
+    int probeLng = sqrt(L/7); 
     int halfSegmentLng = probeLng >> 1; // probeLng/2;
     int third = probeLng/3;
     N1 = middlex - halfSegmentLng; //  N + (L>>1) - halfSegmentLng;
