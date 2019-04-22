@@ -31,7 +31,7 @@ void tps(void **A, int N, int M, int (*compareXY)() ) {
     cut2(A, N, M, compareXY);
     return;
   }
-  int depthLimit = 2.5 * floor(log(L));
+  int depthLimit = 1 + 2.5 * floor(log(L));
   tpsc(A, N, M, depthLimit, compareXY);
 } // end tps
 
@@ -41,14 +41,16 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
   register void *ai, *aj, *am; // array values
   void *pl, *pr; // pivots
 
- // A 3d recursive call is avoided by jumping back to Start.  
+ // A 3d recursive call is avoided by jumping back to Start.
+  int L;
  Start:
+  L = M - N;
   // printf("tpsc N %i M % i dl %i\n", N,M,depthLimit);
+  if ( L <= 0 ) return;
   if ( depthLimit <= 0 ) { // prevent quadradic explosion
     heapc(A, N, M, compareXY);
     return;
   }
-  int L = M - N;
   if ( L < cut3Limit ) {
     cut2c(A, N, M, depthLimit, compareXY);
     return;
