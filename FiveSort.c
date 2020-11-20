@@ -59,13 +59,13 @@ OTHER DEALINGS WITH THE SOFTWARE OR DOCUMENTATION.
 
 char* expiration = "*** License for fivesort has expired ...\n";
 
-/*
+// /*
 #include "Isort.c"
 #include "Hsort.c"
-#include "Qusort.c"
+// #include "Qusort.c"
 #include "Dsort.c"
-#include "C2fsort.c" 
-*/
+// #include "C2fsort.c" 
+
 #include "Qusort.c"
 #include "C2sort.c" 
 #include "C3sort.c" 

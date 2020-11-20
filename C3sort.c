@@ -4,12 +4,7 @@
    headed by fivesort
 */
 
-// const int cut3Limit = 1900; // 4.18122e+08 clocktime 9587
-const int cut3Limit = 1875; //    4.18155e+08 clocktime 9531
-// const int cut3Limit = 1850; // 4.18192e+08 clocktime 9537
-// const int cut3Limit = 1800; // 4.18257e+08 clocktime 9537
-// const int cut3Limit = 1750; // 4.18327e+08 clocktime 9553
-
+const int cut3Limit = 1875;
 
 // Here more global entities used throughout
 // int (*compareXY)();
@@ -41,16 +36,14 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
   register void *ai, *aj, *am; // array values
   void *pl, *pr; // pivots
 
- // A 3d recursive call is avoided by jumping back to Start.
-  int L;
+ // A 3d recursive call is avoided by jumping back to Start.  
  Start:
-  L = M - N;
   // printf("tpsc N %i M % i dl %i\n", N,M,depthLimit);
-  if ( L <= 0 ) return;
   if ( depthLimit <= 0 ) { // prevent quadradic explosion
     heapc(A, N, M, compareXY);
     return;
   }
+  int L = M - N;
   if ( L < cut3Limit ) {
     cut2c(A, N, M, depthLimit, compareXY);
     return;
@@ -58,9 +51,7 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
   depthLimit--;
 
 
-  // const int small = 4450; // 4.19348e+08 clocktime 27587 27634
-  const int small = 4400; // 4.19343e+08 clocktime 27581
-  // const int small = 4350; // 4.19337e+08 clocktime 27640
+  const int small = 4400;
 
 
   if ( L < small ) { // use 5 elements for sampling
@@ -124,7 +115,9 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
     for (k = 0; k < probeLng; k++) // iswap(N1 + k, N + k * offset, A);
     { int xx = N1 + k, yy = N + k * offset; iswap(xx, yy, A); }
     // sort this mini array to obtain good pivots
-    if ( probeLng < 120 ) quicksort0c(A, N1, M1, depthLimit, compareXY); else {
+    /*
+    if ( probeLng < 120 ) quicksort0c(A, N1, M1, depthLimit, compareXY); 
+    else {
       // protect against constant arrays
       int p0 = N1 + (probeLng>>1);
       int pn = N1, pm = M1, d = (probeLng-3)>>3;
@@ -132,9 +125,11 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
       p0 = med(A, p0 - d, p0, p0 + d, compareXY);
       pm = med(A, pm - 2 * d, pm - d, pm, compareXY);
       p0 = med(A, pn, p0, pm, compareXY);
-      dflgm(A, N1, M1, p0, quicksort0c, depthLimit, compareXY);
+      if ( p0 != middlex ) iswap(p0, middlex, A);
+      dflgm(A, N1, M1, middlex, quicksort0c, depthLimit, compareXY);
     }
-
+    */
+    quicksort0c(A, N1, M1, depthLimit, compareXY);
     lw = N1+third; up = M1-third;
     pl = A[lw]; pr = A[up];
     if ( compareXY(pl, A[middlex]) == 0 || 

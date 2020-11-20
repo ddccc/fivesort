@@ -66,6 +66,7 @@ OTHER DEALINGS WITH THE SOFTWARE OR DOCUMENTATION.
 #include <stddef.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 void fivesort(void **AA, int size, 
 	int (*compar ) (const void *, const void * ));
@@ -83,7 +84,7 @@ void callBentley(void **A, int N, int M);
 void compareQuicksort0AgainstFivesort();
 void compareCut2AgainstFivesort();
 void compareBentleyAgainstFivesort(); // on Bentley test bench
-int clock();
+// int clock();
 void validateFiveSortBT();
 
 // Example of objects that can be used to populate an array to be sorted:
@@ -120,13 +121,13 @@ int main (int argc, char *argv[]) {
   // To ask for the license expiration date and the host
      // fivesort(0, 0, 0);
   // To check that fivesort produces a sorted array
-  testFivesort();
+  // testFivesort();
   // testBentley();
   // Ditto but using the general function testAlgorithm
      // ... and uncomment also testFiveSort2 ...
      // testFiveSort2();
   // Compare the outputs of two sorting algorithms
-  validateXYZ(); // must provide another algorithm XYZ
+  // validateXYZ(); // must provide another algorithm XYZ
      // ... and uncomment validateXYZ ...
   // validateBentley();
   // Measure the sorting time of an algorithm
@@ -137,7 +138,7 @@ int main (int argc, char *argv[]) {
   // Whatever here:::
   // compareQuicksort0AgainstFivesort();
   // compareCut2AgainstFivesort();    
-  // compareBentleyAgainstFivesort(); // on Bentley test bench
+  compareBentleyAgainstFivesort(); // on Bentley test bench
   // testQuicksort0();
   // validateFiveSortBT();
   return 0;
@@ -432,12 +433,12 @@ void validateBentley() { // need to change the 1st function
 // Run an algorithm and report the time used
 void timeTest() {
   printf("timeTest() of fivesort \n");
-  int algTime, T;
+  double algTime, T;
   int seed;
   int seedLimit = 10;
   int z;
   // int siz = 1024 * 1024 * 16;
-int siz = 1024 * 1024*16;
+  int siz = 1024 * 1024;
   // construct array
   struct intval *pi;
   void **A = myMalloc("timeTest 1", sizeof(pi) * siz);
@@ -449,11 +450,11 @@ int siz = 1024 * 1024*16;
 
   // warm up the process
   fillarray(A, siz, 666); 
-  int sumTimes = 0;
+  double sumTimes = 0;
   for (z = 0; z < 3; z++) { // repeat to check stability
     algTime = 0;
     // measure the array fill time
-    int TFill = clock();
+    clock_t TFill = clock();
     for (seed = 0; seed < seedLimit; seed++) 
       fillarray(A, siz, seed);
       // here alternative ways to fill the array
@@ -475,10 +476,12 @@ int siz = 1024 * 1024*16;
     }
     // ... and subtract the fill time to obtain the sort time
     algTime = clock() - T - TFill;
-    printf("algTime: %d \n", algTime);
+    algTime = algTime/CLOCKS_PER_SEC;
+
+    printf("algTime: %f \n", algTime);
     sumTimes = sumTimes + algTime;
   }
-  printf("%s %d %s", "sumTimes: ", sumTimes, "\n");
+  printf("%s %f %s", "sumTimes: ", sumTimes, "\n");
   // free array
   for (i = 0; i < siz; i++) {
     free(A[i]); 
@@ -486,7 +489,7 @@ int siz = 1024 * 1024*16;
   free(A);
 } // end timeTest
 
-void add(int z, int t, int a[]) {
+void add(int z, double t, double a[]) {
   if ( z <= 0 ) { a[0] = t; return; }
   if ( a[z-1] <= t ) { a[z] = t; return; }
   a[z] = a[z-1];
@@ -496,10 +499,13 @@ void add(int z, int t, int a[]) {
 // Report the speed fraction of two algorithms on a range of array sizes
 void compareAlgorithms0(char *label, int siz, int seedLimit, void (*alg1)(), void (*alg2)() ) {
   printf("%s on size: %d seedLimit: %d\n", label, siz, seedLimit);
-  int alg1Time, alg2Time, T;
+  printf("The actual sort time must be divided by seedLimit.\n");
+  double alg1Time, alg2Time;
+  clock_t T;
   int seed;
   int z;
   int limit = 1024 * 1024 * 16 + 1;
+  // int limit = 1024 * 1024;
   while (siz <= limit) {
     printf("%s %d %s %d %s", "siz: ", siz, " seedLimit: ", seedLimit, "\n");
     struct intval *pi;
@@ -514,11 +520,11 @@ void compareAlgorithms0(char *label, int siz, int seedLimit, void (*alg1)(), voi
     for (seed = 0; seed < seedLimit; seed++) 
       fillarray(A, siz, seed);
     int zLimit = 6; // even
-    int alg1Times[zLimit-1];
-    int alg2Times[zLimit-1];
+    double alg1Times[zLimit-1];
+    double alg2Times[zLimit-1];
     for (z = 0; z < zLimit; z++) { // repeat to check stability
       alg1Time = 0; alg2Time = 0;
-      int TFill = clock();
+      clock_t TFill = clock();
       for (seed = 0; seed < seedLimit; seed++) 
 	fillarray(A, siz, seed);
       TFill = clock() - TFill;
@@ -528,6 +534,7 @@ void compareAlgorithms0(char *label, int siz, int seedLimit, void (*alg1)(), voi
 	(*alg1)(A, siz, compareIntVal); 
       }
       alg1Time = clock() - T - TFill;
+      alg1Time = alg1Time/ CLOCKS_PER_SEC;
       if ( 0 < z ) add(z-1, alg1Time, alg1Times);
       T = clock();
       for (seed = 0; seed < seedLimit; seed++) { 
@@ -535,19 +542,20 @@ void compareAlgorithms0(char *label, int siz, int seedLimit, void (*alg1)(), voi
 	(*alg2)(A, siz, compareIntVal);
       }
       alg2Time = clock() - T - TFill;
+      alg2Time = alg2Time/ CLOCKS_PER_SEC;
       if ( 0 < z ) add(z-1, alg2Time, alg2Times);
       printf("%s %d %s", "siz: ", siz, " ");
-      printf("%s %d %s", "alg1Time: ", alg1Time, " ");
-      printf("%s %d %s", "alg2Time: ", alg2Time, " ");
-      float frac = 0;
+      printf("%s %f %s", "alg1Time: ", alg1Time, " ");
+      printf("%s %f %s", "alg2Time: ", alg2Time, " ");
+      double frac = 0;
       if ( alg1Time != 0 ) frac = alg2Time / ( 1.0 * alg1Time );
       printf("%s %f %s", "frac: ", frac, "\n");
     }
     int middle = zLimit/2 - 1;
-    int alg1Middle = alg1Times[middle];
-    int alg2Middle = alg2Times[middle];
-    printf("alg1Middle %d alg2Middle %d\n", alg1Middle, alg2Middle);
-    float fracm = 0;
+    double alg1Middle = alg1Times[middle];
+    double alg2Middle = alg2Times[middle];
+    printf("alg1Middle %f alg2Middle %f\n", alg1Middle, alg2Middle);
+    double fracm = 0;
     if ( alg1Middle != 0 ) fracm = alg2Middle/ (1.0 * alg1Middle);
     printf("siz: %d ratio: %f\n", siz, fracm);
 
@@ -941,6 +949,7 @@ void slopes(void **A, int n, int m, int tweak) {
 } // end slopes
 
 void compareBentleyAgainstFivesort() {
+  printf("The displayed timings have only relative meaning.\n");
   printf("Entering compareBentleyAgainstCut3 Sawtooth ........\n");
   // printf("Entering compareBentleyAgainstCut3 Rand2 ........\n");
   // printf("Entering compareBentleyAgainstCut3 Plateau ........\n");

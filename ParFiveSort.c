@@ -70,14 +70,11 @@ char* expiration = "*** License for fivesort has expired ...\n";
 int sleepingThreads = 0;
 int NUMTHREADS;
 
-/*
+// /*
 #include "Isort.c"
 #include "Hsort.c"
-
-#include "Qusort.c"
 #include "Dsort.c"
-#include "C2sort.c"
-*/
+// */
 #include "Qusort.c"
 #include "C2sort.c"
 #include "Qstack.c"
@@ -261,7 +258,7 @@ void fivesort(void **A, int size,
   // Proceed !
   // A = AA;
   // compareXY = compar;
-  if ( size <= cut2SLimit || numberOfThreads <= 0) {
+  if ( size <= cut2SLimit || numberOfThreads <= 1) {
     cut2(A, 0, size-1, compareXY);
     return;
   }
