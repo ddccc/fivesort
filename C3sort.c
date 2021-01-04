@@ -129,7 +129,8 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
       dflgm(A, N1, M1, middlex, quicksort0c, depthLimit, compareXY);
     }
     */
-    quicksort0c(A, N1, M1, depthLimit, compareXY);
+    // quicksort0c(A, N1, M1, depthLimit, compareXY);
+    tpsc(A, N1, M1, depthLimit, compareXY);
     lw = N1+third; up = M1-third;
     pl = A[lw]; pr = A[up];
     if ( compareXY(pl, A[middlex]) == 0 || 
