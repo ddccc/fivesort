@@ -66,11 +66,10 @@ char* expiration = "*** License for fivesort has expired ...\n";
 #include "Dsort.c"
 // #include "C2fsort.c" 
 
-#include "Qusort.c"
+// #include "Qusort.c"
+#include "D3sort.c" // dflgm3
 #include "C2sort.c" 
 #include "C3sort.c" 
-
-
 
 void fivesort(void **AA, int size, 
 	int (*compar ) (const void *, const void * ) ) {

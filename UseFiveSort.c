@@ -87,6 +87,15 @@ void compareBentleyAgainstFivesort(); // on Bentley test bench
 // int clock();
 void validateFiveSortBT();
 
+// #include "Hsort.c"
+void heapc();
+// #include "Dsort.c"
+void dflgm();
+// #include "Isort.c"
+void insertionsort();
+#define iswap(p, q, A) { void *t3t = A[p]; A[p] = A[q]; A[q] = t3t; }
+#include "Qusort.c" // quicksort member
+
 // Example of objects that can be used to populate an array to be sorted:
   // To obtain the int field from X: ((struct intval *) X)->val
   // To obtain the float field from X: ((struct intval *) X)->valf
@@ -599,7 +608,6 @@ void compareCut2AgainstFivesort() {
 void heapc();
 void quicksort0();
 void quicksort0c();
-void iswap();
 void dflgm();
 void cut2();
 

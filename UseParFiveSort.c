@@ -69,6 +69,12 @@ OTHER DEALINGS WITH THE SOFTWARE OR DOCUMENTATION.
 #include <string.h>
 #include <math.h>
 
+#define iswap(p, q, A) { void *t3t = A[p]; A[p] = A[q]; A[q] = t3t; }
+void heapc();
+void insertionsort();
+void dflgm();
+#include "Qusort.c" // quicksort0
+
 void testCut2();
 void testFiveSort();
 void testFiveSort2();

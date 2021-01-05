@@ -4,6 +4,15 @@
 
 const int cut2fpLimit = 2000;
 
+// calculate the median of 3
+int medfp(void **A, int a, int b, int c,
+	int (*compareXY ) (const void *, const void * ) ) {
+  return
+    compareXY( A[a], A[b] ) < 0 ?
+    ( compareXY( A[b], A[c] ) < 0 ? b : compareXY( A[a], A[c] ) < 0 ? c : a)
+    : compareXY( A[b], A[c] ) > 0 ? b : compareXY( A[a], A[c] ) > 0 ? c : a;
+} // end medfp
+
 void cut2fpc();
 // cut2fp is the parallel version of cut2f
 void cut2fp(void **A, int N, int M, int (*compare)()) { 
@@ -38,10 +47,10 @@ void cut2fpc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
     int pn = N;
     int pm = M;
     int d = (L-2)>>3; // L/8;
-    pn = med(A, pn, pn + d, pn + 2 * d, compareXY);
-    p0 = med(A, p0 - d, p0, p0 + d, compareXY);
-    pm = med(A, pm - 2 * d, pm - d, pm, compareXY);
-    p0 = med(A, pn, p0, pm, compareXY);
+    pn = medfp(A, pn, pn + d, pn + 2 * d, compareXY);
+    p0 = medfp(A, p0 - d, p0, p0 + d, compareXY);
+    pm = medfp(A, pm - 2 * d, pm - d, pm, compareXY);
+    p0 = medfp(A, pn, p0, pm, compareXY);
     iswap(N, p0, A); // ... and is put in first position
 
   register void *T = A[N];  // pivot
