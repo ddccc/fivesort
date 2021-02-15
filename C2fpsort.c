@@ -22,7 +22,7 @@ void cut2fp(void **A, int N, int M, int (*compare)()) {
     cut2f(A, N, M, compare);
     return;
   }
-  int depthLimit = 2.5 * floor(log(L));
+  int depthLimit = 2.9 * floor(log(L));
   cut2fpc(A, N, M, depthLimit, compare);
 } // end cut2fp
 

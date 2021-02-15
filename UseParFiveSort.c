@@ -692,7 +692,7 @@ void threesort(void **A, int size,
   // A = AA;
   // compareXY = compar;
   llx = newStack();
-  int depthLimit = 2.5 * floor(log(size));
+  int depthLimit = 2.9 * floor(log(size));
   struct task *t = newTask(A, 0, size-1, depthLimit, compar);
   addTaskSynchronized0(llx, t);
 
@@ -726,7 +726,7 @@ void cut2p(void **A, int N, int M, int (*compar)()) {
     cut2(A, N, M, compar);
     return;
   }
-  int depthLimit = 2.5 * floor(log(L));
+  int depthLimit = 2.9 * floor(log(L));
   cut2pc(A, N, M, depthLimit, compar);
 }
 // multi threaded 4-layered Quicksort

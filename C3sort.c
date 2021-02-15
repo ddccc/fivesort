@@ -26,7 +26,7 @@ void tps(void **A, int N, int M, int (*compareXY)() ) {
     cut2(A, N, M, compareXY);
     return;
   }
-  int depthLimit = 1 + 2.5 * floor(log(L));
+  int depthLimit = 1 + 2.9 * floor(log(L));
   tpsc(A, N, M, depthLimit, compareXY);
 } // end tps
 
