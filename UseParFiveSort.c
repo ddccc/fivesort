@@ -73,7 +73,7 @@ OTHER DEALINGS WITH THE SOFTWARE OR DOCUMENTATION.
 void heapc();
 void insertionsort();
 void dflgm();
-#include "Qusort.c" // quicksort0
+// #include "Qusort.c" // quicksort0
 
 void testCut2();
 void testFiveSort();

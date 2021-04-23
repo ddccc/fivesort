@@ -94,7 +94,7 @@ void dflgm();
 // #include "Isort.c"
 void insertionsort();
 #define iswap(p, q, A) { void *t3t = A[p]; A[p] = A[q]; A[q] = t3t; }
-#include "Qusort.c" // quicksort member
+// #include "Qusort.c" // quicksort member
 
 // Example of objects that can be used to populate an array to be sorted:
   // To obtain the int field from X: ((struct intval *) X)->val
