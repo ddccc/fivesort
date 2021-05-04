@@ -70,7 +70,7 @@ OTHER DEALINGS WITH THE SOFTWARE OR DOCUMENTATION.
 
 void fivesort(void **AA, int size, 
 	int (*compar ) (const void *, const void * ));
-void testQuicksort0();
+void testQuicksortm();
 void testFivesort();
 void testFiveSort2();
 void testBentley();
@@ -79,9 +79,9 @@ void validateXYZ();
 void validateBentley();
 void callCut2(void **AA, int size, 
 	int (*compar ) (const void *, const void * ));
-void callQuicksort0(void **AA, int size, int (*compar ) () );
+void callQuicksortm(void **AA, int size, int (*compar ) () );
 void callBentley(void **A, int N, int M);
-void compareQuicksort0AgainstFivesort();
+void compareQuicksortmAgainstFivesort();
 void compareCut2AgainstFivesort();
 void compareBentleyAgainstFivesort(); // on Bentley test bench
 // int clock();
@@ -145,10 +145,10 @@ int main (int argc, char *argv[]) {
      // compareFivesortAgainstXYZ();
      // ... and uncomment also compareFivesortAgainstXYZ ...
   // Whatever here:::
-  // compareQuicksort0AgainstFivesort();
+  // compareQuicksortmAgainstFivesort();
   // compareCut2AgainstFivesort();    
   compareBentleyAgainstFivesort(); // on Bentley test bench
-  // testQuicksort0();
+  // testQuicksortm();
   // validateFiveSortBT();
   return 0;
 } // end of main
@@ -271,10 +271,10 @@ void testFiveSort2() {
   testAlgorithm("Running fivesort ...", fivesort);
 } // end testFiveSort2
 
-void testQuicksort0() {
-  void callQuicksort0();
-  testAlgorithm0("Check quicksort0()", 1024*1024, callQuicksort0);
-} // end testQuicksort0()
+void testQuicksortm() {
+  void callQuicksortm();
+  testAlgorithm0("Check quicksortm()", 1024*1024, callQuicksortm);
+} // end testQuicksortm()
 
 void testBentley() {
   //void callBentley();
@@ -376,13 +376,13 @@ void validateAlgorithm(char* label, void (*alg1)(), void (*alg2)() ) {
 
 // Example:: replace XYZ by what you want to validate
 void validateXYZ() {
-  void fivesort(), callQuicksort0();
-  validateAlgorithm("Running validate XYZ against trusted callQuicksort0 ...",
-		    fivesort, callQuicksort0);
+  void fivesort(), callQuicksortm();
+  validateAlgorithm("Running validate XYZ against trusted callQuicksortm ...",
+		    fivesort, callQuicksortm);
   /*
-  void callCut2(), callQuicksort0();
-  validateAlgorithm("Running validate XYZ against trusted callQuicksort0 ...",
-		    callCut2, callQuicksort0);
+  void callCut2(), callQuicksortm();
+  validateAlgorithm("Running validate XYZ against trusted callQuicksortm ...",
+		    callCut2, callQuicksortm);
   */
 } // end validateXYZ
 
@@ -591,10 +591,10 @@ compareFivesortAgainstXYZ() {
 }
 */
 
-void compareQuicksort0AgainstFivesort() {
-  void fivesort(), callQuicksort0();
-  compareAlgorithms("Compare quicksort0 vs fivesort", callQuicksort0, fivesort);
-} // end compareQuiksort0AgainstFivesort
+void compareQuicksortmAgainstFivesort() {
+  void fivesort(), callQuicksortm();
+  compareAlgorithms("Compare quicksortm vs fivesort", callQuicksortm, fivesort);
+} // end compareQuiksortmAgainstFivesort
 
 void compareCut2AgainstFivesort() {
   void fivesort(), callCut2();
@@ -606,15 +606,15 @@ void compareCut2AgainstFivesort() {
 // const int cut2Limit = 127;
 
 void heapc();
-void quicksort0();
-void quicksort0c();
+void quicksortm();
+void quicksortmc();
 void dflgm();
 void cut2();
 
-void callQuicksort0(void **A, int size, 
+void callQuicksortm(void **A, int size, 
 	int (*compar ) (const void *, const void * ) ) {
-  quicksort0(A, 0, size-1, compar);
-} // end callQuicksort0
+  quicksortm(A, 0, size-1, compar);
+} // end callQuicksortm
 
 // void cut2(int N, int M);
 void callCut2(void **A, int size, 
@@ -1018,7 +1018,7 @@ void compareBentleyAgainstFivesort() {
 	    slopes(A, siz, m, tweak);
 	    // callBentley(A, 0, siz-1); 
 	    callCut2(A, siz, compareIntVal); 
-	    // callQuicksort0(B, siz, compareIntVal); 
+	    // callQuicksortm(B, siz, compareIntVal); 
 	  }
 	  bentleyTime = bentleyTime + clock() - T - TFill;
 	  sumQsortB += bentleyTime;

@@ -73,7 +73,6 @@ OTHER DEALINGS WITH THE SOFTWARE OR DOCUMENTATION.
 void heapc();
 void insertionsort();
 void dflgm();
-// #include "Qusort.c" // quicksort0
 
 void testCut2();
 void testFiveSort();
@@ -84,7 +83,7 @@ void validateXYZ();
 void compareThreesortAgainstCut2();
 void compareCut2AgainstThreesort();
 void compareCut2AgainstFivesort();
-void compareQuicksort0AgainstFivesort();
+void compareQuicksortmAgainstFivesort();
 // void compareFivesortAgainstXYZ(); // for if you use this function
 void fivesort(void **AA, int size, 
 	      int (*compar) (const void *, const void * ),
@@ -153,7 +152,7 @@ int main (int argc, char *argv[]) {
   // Whatever here:::
      // compareCut2AgainstThreesort();
      // compareCut2AgainstFivesort();
-     // compareQuicksort0AgainstFivesort();
+     // compareQuicksortmAgainstFivesort();
      // validateParFiveSortBT();
   return 0;
 } // end of main
@@ -413,13 +412,13 @@ void validateAlgorithm(char* label, void (*alg1)(), void (*alg2)() ) {
 // Example:: replace XYZ by what you want to validate
 void validateXYZ() {
 
-  void fivesort(), callQuicksort0();
-  validateAlgorithm("Running validate using trusted callQuicksort0 ...",
-		    fivesort, callQuicksort0);
+  void fivesort(), callQuicksortm();
+  validateAlgorithm("Running validate using trusted callQuicksortm ...",
+		    fivesort, callQuicksortm);
   /*
-  void threesort(), callQuicksort0();
-  validateAlgorithm("Running validate using trusted callQuicksort0 ...",
-		    threesort, callQuicksort0);
+  void threesort(), callQuicksortm();
+  validateAlgorithm("Running validate using trusted callQuicksortm ...",
+		    threesort, callQuicksortm);
   */
 } // end validateXYZ
 
@@ -601,10 +600,10 @@ void compareCut2AgainstFivesort() {
   void callCut2(), fivesort();
   compareAlgorithms("Compare fivesort vs cut2S", fivesort, callCut2);
 } // end compareCut2AgainstFivesort
-void compareQuicksort0AgainstFivesort() {
-  void fivesort(), callQuicksort0();
-  compareAlgorithms("Compare fivesort vs quicksort", fivesort, callQuicksort0);
-} // end compareQuicksort0AgainstFivesort
+void compareQuicksortmAgainstFivesort() {
+  void fivesort(), callQuicksortm();
+  compareAlgorithms("Compare fivesort vs quicksort", fivesort, callQuicksortm);
+} // end compareQuicksortmAgainstFivesort
 
 
 // Here are global entities used throughout
@@ -641,7 +640,7 @@ void addTaskSynchronized0(struct stack *ll, struct task *t)
 /* threesort is a 4-level sorter:
    parallel cut2
    sequential cut2S
-   sequential quicksort0
+   sequential quicksortm
    sequential insertionsort
  */
 
@@ -732,8 +731,8 @@ void cut2p(void **A, int N, int M, int (*compar)()) {
 // multi threaded 4-layered Quicksort
 
 void heapc();
-void quicksort0();
-void quicksort0c();
+void quicksortm();
+void quicksortmc();
 // void iswap();
 void dflgm();
 void cut2();
@@ -843,10 +842,10 @@ void callCut2(void **A, int siz, int (*compar ) () ) {
   cut2(A, 0, siz -1, compar);
 } // end callCut2
 
-void quicksort0(void **A, int N, int M, int (*compar)());
-void callQuicksort0(void **A, int size, int (*compar)() ) {
-  quicksort0(A, 0, size-1, compar);
-} // end callQuicksort0
+void quicksortm(void **A, int N, int M, int (*compar)());
+void callQuicksortm(void **A, int size, int (*compar)() ) {
+  quicksortm(A, 0, size-1, compar);
+} // end callQuicksortm
 
 
 // Bentley test-bench content generators
