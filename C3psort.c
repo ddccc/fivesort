@@ -15,17 +15,17 @@ const int cut3PLimit = 1875;
 
 void tpsc();
 // tps is the header function for the three partition sorter tpsc
-void tps(void **A, int N, int M, int (*compar)()) {
-  int L = M - N;
+void tps(void **A, int lo, int hi, int (*compar)()) {
+  int L = hi - lo;
   if ( L < cut3PLimit ) { 
-    cut2(A, N, M, compar);
+    cut2(A, lo, hi, compar);
     return;
   }
   int depthLimit = 1 + 2.9 * floor(log(L));
-  tpsc(A, N, M, depthLimit, compar);
+  tpsc(A, lo, hi, depthLimit, compar);
 } // end tps
 
-void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {  
+void tpsc(void **A, int lo, int hi, int depthLimit, int (*compareXY)()) {  
   // int z; // for tracing
   register int i, j, up, lw; // indices
   register void *ai, *aj, *am; // array values
@@ -33,15 +33,15 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
   int L;
  // A 3d recursive call is avoided by jumping back to Start.  
  Start:
-  L = M - N;
-  // printf("tpsc N %i M % i dl %i\n", N,M,depthLimit);
+  L = hi - lo;
+  // printf("tpsc lo %i hi % i dl %i\n", lo,hi,depthLimit);
   if ( L <= 0 ) return;
   if ( depthLimit <= 0 ) { // prevent quadradic explosion
-    heapc(A, N, M, compareXY);
+    heapc(A, lo, hi, compareXY);
     return;
   }
   if ( L < cut3PLimit ) {
-    cut2c(A, N, M, depthLimit, compareXY);
+    cut2c(A, lo, hi, depthLimit, compareXY);
     return;
   }
   depthLimit--;
@@ -49,10 +49,10 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
  const int small = 4400;
   if ( L < small ) { // use 5 elements for sampling
         int sixth = (L + 1) / 6;
-        int e1 = N  + sixth;
-        int e5 = M - sixth;
-	int e3 = N + L/2; // The midpoint
-        // int e3 = (N+M) / 2; // The midpoint
+        int e1 = lo  + sixth;
+        int e5 = hi - sixth;
+	int e3 = lo + L/2; // The midpoint
+        // int e3 = (lo+hi) / 2; // The midpoint
         int e4 = e3 + sixth;
         int e2 = e3 - sixth;
         // Sort these elements using a 5-element sorting network
@@ -75,16 +75,16 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
 	// if ( ae2 == ae3 || ae3 == ae4 ) {
 	if ( compareXY(ae2, ae3) == 0 || compareXY(ae3, ae4) == 0 ) {
 	  // Give up, cannot find good pivots
-	  dflgm(A, N, M, e3, tpsc, depthLimit, compareXY);
+	  dflgm(A, lo, hi, e3, tpsc, depthLimit, compareXY);
 	  return;
 	}
 	// Fix end points
-	iswap(N, e2, A); iswap(M, e4, A);
+	iswap(lo, e2, A); iswap(hi, e4, A);
 
-	pl = A[N]; pr = A[M]; // they are there temporarily
+	pl = A[lo]; pr = A[hi]; // they are there temporarily
 
 	// initialize running indices
-	i = N+1; j = M-1; 
+	i = lo+1; j = hi-1; 
 	lw = e3-1; up = e3+1;
 
 	// while ( A[i] < pl ) i++;
@@ -93,63 +93,63 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
 	while ( compareXY(pr, A[j]) < 0 ) j--;
 
  } else { // small <= L
-     i = N; j = M;
-     int middlex = N + (L>>1); // N + L/2
+     i = lo; j = hi;
+     int middlex = lo + (L>>1); // lo + L/2
 
-    int k, N1, M1; // for sampling
+    int k, lo1, hi1; // for sampling
     int probeLng = sqrt(L/7); 
     int halfSegmentLng = probeLng >> 1; // probeLng/2;
     int third = probeLng/3;
-    N1 = middlex - halfSegmentLng; //  N + (L>>1) - halfSegmentLng;
-    M1 = N1 + probeLng - 1;
+    lo1 = middlex - halfSegmentLng; //  lo + (L>>1) - halfSegmentLng;
+    hi1 = lo1 + probeLng - 1;
     int offset = L/probeLng;  
 
-    // assemble the mini array [N1, M1]
-    for (k = 0; k < probeLng; k++) // iswap(N1 + k, N + k * offset, A);
-    { int xx = N1 + k, yy = N + k * offset; iswap(xx, yy, A); }
+    // assemble the mini array [lo1, hi1]
+    for (k = 0; k < probeLng; k++) // iswap(lo1 + k, lo + k * offset, A);
+    { int xx = lo1 + k, yy = lo + k * offset; iswap(xx, yy, A); }
     // sort this mini array to obtain good pivots
     /*
-    if ( probeLng < 120 ) quicksort0c(A, N1, M1, depthLimit, compareXY); 
+    if ( probeLng < 120 ) quicksort0c(A, lo1, hi1, depthLimit, compareXY); 
     else {
     // protect against constant arrays
-    int p0 = N1 + (probeLng>>1);
-    int pn = N1, pm = M1, d = (probeLng-3)>>3;
+    int p0 = lo1 + (probeLng>>1);
+    int pn = lo1, pm = hi1, d = (probeLng-3)>>3;
     pn = med(A, pn, pn + d, pn + 2 * d, compareXY);
     p0 = med(A, p0 - d, p0, p0 + d, compareXY);
     pm = med(A, pm - 2 * d, pm - d, pm, compareXY);
     p0 = med(A, pn, p0, pm, compareXY);
     if ( p0 != middlex ) iswap(p0, middlex, A);
-    dflgm(A, N1, M1, middlex, quicksort0c, depthLimit, compareXY);
+    dflgm(A, lo1, hi1, middlex, quicksort0c, depthLimit, compareXY);
     }
     */
-    // quicksort0c(A, N1, M1, depthLimit, compareXY); 
-    cut2c(A, N1, M1, depthLimit, compareXY); 
-    lw = N1+third; up = M1-third;
+    // quicksort0c(A, lo1, hi1, depthLimit, compareXY); 
+    cut2c(A, lo1, hi1, depthLimit, compareXY); 
+    lw = lo1+third; up = hi1-third;
     pl = A[lw]; pr = A[up];
     if ( compareXY(pl, A[middlex]) == 0 || 
 	 compareXY( A[middlex], pr) == 0 ) {
 	  // Give up, cannot find good pivots
-	  dflgm(A, N, M, middlex, tpsc, depthLimit, compareXY);
+	  dflgm(A, lo, hi, middlex, tpsc, depthLimit, compareXY);
 	  return;
     }
     // Swap these two segments to the corners
-    for ( k = N1; k <= lw-1; k++ ) {
+    for ( k = lo1; k <= lw-1; k++ ) {
       iswap(k, i, A); i++;
     }
     // i--;
-    for ( k = M1; up+1 <= k; k--) {
+    for ( k = hi1; up+1 <= k; k--) {
       iswap(k, j, A); j--;
     }
     // j++;
-    iswap(N, lw, A); iswap(M, up, A); // they are there temporarily 
+    iswap(lo, lw, A); iswap(hi, up, A); // they are there temporarily 
   }
 
 	/* 
 	  |)----------(--)-------------(|
-	 N i         lw  up            j M
-	  N <= x < i -> A[x] < pl
+	lo i         lw  up            j hi
+	  lo <= x < i -> A[x] < pl
 	  lw < x < lup -> pl <= A[x] <= pr
-	  j < x <= M -> pr < A[x]
+	  j < x <= hi -> pr < A[x]
 	*/
  again:
 	while ( i <= lw ) {
@@ -170,7 +170,7 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
 	      }
 	      continue;
 	    }
-	    // aj -> M
+	    // aj -> hi
 	    if ( j < up ) { // right gap closed
 	      j++; goto rightClosedAIR;
 	    } // up <= j
@@ -186,7 +186,7 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
  AIM:
 	/* 
 	  |)----------(--)-------------(|
-	 N i         lw  up            j M
+	lo i         lw  up            j hi
 	 ai -> M
 	*/
 	if ( lw < i ) { i--; goto leftClosed; }
@@ -242,7 +242,7 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
  AIRAJM:
 	/* 
 	  |)----------(--)-------------(|
-	 N i         lw  up            j M
+	lo i         lw  up            j hi
 	 ai -> R aj -> M 
 	*/
 	am = A[lw];
@@ -278,7 +278,7 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
  AJM:
 	/* 
 	  |)----------(--)-------------(|
-	 N i         lw  up            j M
+	lo i         lw  up            j hi
 	 aj -> M
 	*/
 	am = A[lw];
@@ -321,7 +321,7 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
  AIR:
 	/* 
 	  |)----------(--)-------------(|
-	 N i         lw  up            j M
+	lo i         lw  up            j hi
 	 ai -> R
 	*/
 	aj = A[j];
@@ -343,7 +343,7 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
  leftClosed:
 	  /* 
 	  |--]------------)-------------(|
-	 N   i            up            j M
+	lo   i            up            j hi
 	  */
 	aj = A[j];
 	// if ( pr < aj ) { j--; goto leftClosed; }
@@ -395,7 +395,7 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
  rightClosedAIR:
 	/* 
 	   |-)----------(--[-------------|
-	   N i         lw  j             M
+	  lo i         lw  j             hi
 	   ai -> R
 	*/
 	am = A[lw];
@@ -419,7 +419,7 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
  rightClosedAIM:
 	/* 
 	   |-)----------(--[-------------|
-	   N i         lw  j             M
+	  lo i         lw  j             hi
 	   ai -> M
 	*/
 	am = A[lw];
@@ -442,7 +442,7 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
  rightClosed:
 	/* 
 	   |-)----------(--[-------------|
-	   N i         lw  j             M
+	  lo i         lw  j             hi
 	*/
 	// while ( A[i] < pl ) i++;
 	while ( compareXY(A[i], pl) < 0 ) i++;
@@ -456,61 +456,61 @@ void tpsc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
  done:
     /*
       |---]---------[---------|
-      N   i         j         M
+     lo   i         j         hi
     */
-    // printf("tpsc done N %i M % i dl %i\n", N,M,depthLimit);
+    // printf("tpsc done lo %i hi % i dl %i\n", lo,hi,depthLimit);
     /*
-      for ( z = N; z <= i; z++ )
+      for ( z = lo; z <= i; z++ )
 	//	if ( pl <= A[z] ) {
 	if ( compareXY(pl, A[z]) <= 0 ) {
 	  printf("doneL z %i\n", z);
-	  printf("N %i i %i lw %i up %i j %i M %i\n", N,i,lw,up,j,M);
+	  printf("lo %i i %i lw %i up %i j %i hi %i\n", lo,i,lw,up,j,hi);
 	  exit(0);
 	}
       for ( z = i+1; z < j; z++ )
 	//	if ( A[z] < pl || pr < A[z] ) {
 	if ( compareXY(A[z], pl) < 0 || pr < A[z] ) {
 	  printf("doneM z %i\n", z);
-	  printf("N %i i %i lw %i up %i j %i M %i\n", N,i,lw,up,j,M);
+	  printf("lo %i i %i lw %i up %i j %i hi %i\n", lo,i,lw,up,j,hi);
 	  exit(0);
 	}
-      for ( z = j; z <= M ; z++ )
+      for ( z = j; z <= hi ; z++ )
 	//	if ( A[z] <= pr ) {
 	if ( compareXY(A[z], pr) <= 0 ) {
 	  printf("doneR z %i\n", z);
-	  printf("N %i i %i lw %i up %i j %i M %i\n", N,i,lw,up,j,M);
+	  printf("lo %i i %i lw %i up %i j %i hi %i\n", lo,i,lw,up,j,hi);
 	  exit(0);
 	}
     */
-	// tpsc(A, N, i, depthLimit, compareXY);
+	// tpsc(A, lo, i, depthLimit, compareXY);
 	// tpsc(A, i+1, j-1, depthLimit, compareXY);
-	// tpsc(A, j, M, depthLimit, compareXY);
+	// tpsc(A, j, hi, depthLimit, compareXY);
 
-	if ( i - N < j - i ) {
-	  if ( j - i < M - j ) {
-	    addTaskSynchronized(ll, newTask(A, j, M, depthLimit, compareXY));
+	if ( i - lo < j - i ) {
+	  if ( j - i < hi - j ) {
+	    addTaskSynchronized(ll, newTask(A, j, hi, depthLimit, compareXY));
 	    addTaskSynchronized(ll, newTask(A, i+1,j-1, depthLimit, compareXY));
 	  } else {
 	    addTaskSynchronized(ll, newTask(A, i+1,j-1, depthLimit, compareXY));
-	    addTaskSynchronized(ll, newTask(A, j, M, depthLimit, compareXY));
+	    addTaskSynchronized(ll, newTask(A, j, hi, depthLimit, compareXY));
 	  }
-	  M = i;
+	  hi = i;
 	  goto Start;
 	}
-	if ( j - i < M - j ) {
-	  if ( i - N < M - j) {
-	    addTaskSynchronized(ll, newTask(A, j, M, depthLimit, compareXY));
-	    addTaskSynchronized(ll, newTask(A, N, i, depthLimit, compareXY));
+	if ( j - i < hi - j ) {
+	  if ( i - lo < hi - j) {
+	    addTaskSynchronized(ll, newTask(A, j, hi, depthLimit, compareXY));
+	    addTaskSynchronized(ll, newTask(A, lo, i, depthLimit, compareXY));
 	  } else {
-	    addTaskSynchronized(ll, newTask(A, N, i, depthLimit, compareXY));
-	    addTaskSynchronized(ll, newTask(A, j, M, depthLimit, compareXY));
+	    addTaskSynchronized(ll, newTask(A, lo, i, depthLimit, compareXY));
+	    addTaskSynchronized(ll, newTask(A, j, hi, depthLimit, compareXY));
 	  }
-	  N = i+1;
-	  M = j-1;
+	  lo = i+1;
+	  hi = j-1;
 	  goto Start;
 	}
-	addTaskSynchronized(ll, newTask(A, N, i, depthLimit, compareXY));
+	addTaskSynchronized(ll, newTask(A, lo, i, depthLimit, compareXY));
 	addTaskSynchronized(ll, newTask(A, i+1,j-1, depthLimit, compareXY));
-	N = j;
+	lo = j;
 	goto Start;
 } // end tpsc
