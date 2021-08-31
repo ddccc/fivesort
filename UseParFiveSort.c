@@ -85,9 +85,11 @@ void compareCut2AgainstThreesort();
 void compareCut2AgainstFivesort();
 void compareQuicksortmAgainstFivesort();
 // void compareFivesortAgainstXYZ(); // for if you use this function
+
 void fivesort(void **AA, int size, 
 	      int (*compar) (const void *, const void * ),
 	      int numberOfThreads);
+
 void threesort(void **AA, int size, 
 	       int (*compar) (const void *, const void * ),
 	       int num);
@@ -96,6 +98,11 @@ void dflgm(void **AA, int N, int M, int pivotx, void (*cut)(),
 void callCut2(void **AA, int siz, 
  	       int (*compar ) (const void *, const void * ) );
 void validateParFiveSortBT();
+
+#include "C2sort.c"
+
+// #include "ParFiveSort.h"
+
 
 #define errexit(code,str)                          \
   fprintf(stderr,"%s: %s\n",(str),strerror(code)); \
@@ -133,19 +140,19 @@ int main (int argc, char *argv[]) {
   // To ask for the license expiration date and the host
      // fivesort(0, 0, 0, 0);
   // To check that cut2S produces a sorted array
-  // testCut2();
+  testCut2();
   // To check that fivesort produces a sorted array
   testFiveSort();
   // Ditto but using the general function testAlgorithm
      // ... and uncomment also testFiveSort2 ...
      // testFiveSort2();
   // To check that threesort produces a sorted array
-  // testThreesort();
+  testThreesort();
   // Compare the outputs of two sorting algorithms
   validateXYZ(); // must provide an other algorithm XYZ
      // ... and uncomment validateXYZ ...
   // Measure the sorting time of an algorithm
-     // timeTest();
+     timeTest();
   // Compare the speed fraction of two algorithms
      // compareFivesortAgainstXYZ();
      // ... and uncomment also compareFivesortAgainstXYZ ...
@@ -718,7 +725,7 @@ void threesort(void **A, int size,
 int cut2SLimit2 = 1000;
 
 void cut2pc();
-void cut2();
+// void cut2();
 void cut2p(void **A, int N, int M, int (*compar)()) {
   int L = M-N;
   if ( L <= cut2SLimit ) { 
@@ -730,18 +737,21 @@ void cut2p(void **A, int N, int M, int (*compar)()) {
 }
 // multi threaded 4-layered Quicksort
 
-void heapc();
 void quicksortm();
 void quicksortmc();
 // void iswap();
-void dflgm();
-void cut2();
-void cut2c();
+// void cut2();
+// #include "C2sort.h"
+// #include "ParFiveSort.h"
 void addTaskSynchronized();
 
 #define iswap(p, q, A) { void *t3t = A[p]; A[p] = A[q]; A[q] = t3t; }
 
 // cut2pc is pretty close to parallel FourSort
+
+void cut2c(void **A, int N, int M, int depthLimit, 
+	   int (*compar ) (const void *, const void * ) );
+
 void cut2pc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
 
  Loop:
@@ -791,7 +801,7 @@ void cut2pc(void **A, int N, int M, int depthLimit, int (*compareXY)()) {
 	if ( compareXY(T, A[N]) <= 0 || compareXY(A[M], T) < 0) {
 	   // give up because cannot find a good pivot
 	   // dflgm is a dutch flag type of algorithm
-	   void cut2c();
+	   // void cut2c();
 	   dflgm(A, N, M, e3, cut2c, depthLimit, compareXY);
 	   return;
 	 }
@@ -1004,12 +1014,6 @@ void slopes(void **A, int n, int m, int tweak) {
   dither(A, n);
 } // end slopes
 
-void heapSort(void **a, int count, int (*compar)());
-void callHeapsort(void **A, int size, 
-	 int (*compar) (const void *, const void * ) ) {
-  heapSort(A, size, compar);
-} // end callHeapsort
-
 void validateParFiveSortBT() {
   // printf("Entering validateParFiveSortBT Sawtooth ........\n");
   printf("Entering validateParFiveSortBT Rand2 ........\n");
@@ -1070,7 +1074,7 @@ void validateParFiveSortBT() {
 	    // plateau(A, siz, m, tweak);
 	    // shuffle(A, siz, m, tweak, seed);
 	    // stagger(A, siz, m, tweak);
-	    callHeapsort(A, siz, compareIntVal);
+	    heapc(A, 0, siz-1, compareIntVal);
 	  }
 	  sortcBTime = sortcBTime + clock() - T - TFill;
 	  sumQsortB += sortcBTime;

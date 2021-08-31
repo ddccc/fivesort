@@ -2,6 +2,9 @@
 // Date: Fri Jan 31 13:32:12 2014, 2017
 // (C) OntoOO/ Dennis de Champeaux
 
+// ***** This member is not used any longer Mon Aug 30 09:50:36 2021 ***
+
+
 const int cut2fpLimit = 2000;
 
 // calculate the median of 3

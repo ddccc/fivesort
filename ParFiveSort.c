@@ -71,20 +71,24 @@ int sleepingThreads = 0;
 int NUMTHREADS;
 
 // /*
-#include "Isort.c"
-#include "Hsort.c"
-#include "Dsort.c"
+#include "Isort.h"
+#include "Hsort.h"
+#include "Dsort.h"
 // */
-#include "Qusortm.c"
+#include "Qusortm.h"
 // #include "D3sort.c" // dflgm3
-#include "C2sort.c"
+// #include "C2sort.h"
 #include "Qstack.c"
+
+void cut2(void **A, int N, int M, 
+	   int (*compar ) (const void *, const void * ) );
 
 struct stack *ll;
 struct task *newTask();
 void addTaskSynchronized();
+void tpsc(void **A, int lo, int hi, int depthLimit, int (*compareXY)()) {}
 
-#include "C3psort.c"
+// #include "C3psort.h"
 
 
 void *myMallocSS(char* location, int size) {

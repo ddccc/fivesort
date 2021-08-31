@@ -1064,12 +1064,6 @@ void compareBentleyAgainstFivesort() {
   }
 } // end compareBentleyAgainstFivesort
 
-void heapSort(void **a, int count, int (*compar)());
-void callHeapsort(void **A, int size, 
-	 int (*compar) (const void *, const void * ) ) {
-  heapSort(A, size, compar);
-} // end callHeapsort
-
 void validateFiveSortBT() {
   printf("Entering validateFiveSortBT Sawtooth ........\n");
   // printf("Entering validateFiveSortBT Rand2 ........\n");
@@ -1130,7 +1124,7 @@ void validateFiveSortBT() {
 	    // plateau(A, siz, m, tweak);
 	    // shuffle(A, siz, m, tweak, seed);
 	    // stagger(A, siz, m, tweak);
-	    callHeapsort(A, siz, compareIntVal);
+	    heapc(A, 0, siz-1, compareIntVal);
 	  }
 	  callBentleyTime = callBentleyTime + clock() - T - TFill;
 	  sumQsortB += callBentleyTime;
