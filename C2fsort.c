@@ -4,9 +4,9 @@
 
 // ***** This member is not used any longer Mon Aug 30 09:50:36 2021 ***
 
-const int cut2fLimit = 2000;
+static const int cut2fLimit = 2000;
 
-void cut2fc();
+static void cut2fc();
 // cut2f is used as a best in class quicksort implementation 
 // with a defense against quadratic behavior due to duplicates
 // cut2f is a support function to call up the workhorse cut2fc

@@ -4,7 +4,7 @@
    headed by fivesort
 */
 
-const int cut3PLimit = 1875;
+static const int cut3PLimit = 1875;
 
 /*
 #include "Isort.c"
@@ -13,7 +13,7 @@ const int cut3PLimit = 1875;
 #include "Dsort.c"
 */
 
-void tpsc();
+static void tpsc();
 // tps is the header function for the three partition sorter tpsc
 void tps(void **A, int lo, int hi, int (*compar)()) {
   int L = hi - lo;

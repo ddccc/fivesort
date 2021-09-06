@@ -5,10 +5,10 @@
 // ***** This member is not used any longer Mon Aug 30 09:50:36 2021 ***
 
 
-const int cut2fpLimit = 2000;
+static const int cut2fpLimit = 2000;
 
 // calculate the median of 3
-int medfp(void **A, int a, int b, int c,
+static int medfp(void **A, int a, int b, int c,
 	int (*compareXY ) (const void *, const void * ) ) {
   return
     compareXY( A[a], A[b] ) < 0 ?
@@ -16,7 +16,7 @@ int medfp(void **A, int a, int b, int c,
     : compareXY( A[b], A[c] ) > 0 ? b : compareXY( A[a], A[c] ) > 0 ? c : a;
 } // end medfp
 
-void cut2fpc();
+static void cut2fpc();
 // cut2fp is the parallel version of cut2f
 void cut2fp(void **A, int N, int M, int (*compare)()) { 
   // printf("cut2fp %d %d %d \n", N, M, M-N;

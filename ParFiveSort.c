@@ -58,7 +58,7 @@ OTHER DEALINGS WITH THE SOFTWARE OR DOCUMENTATION.
 #include <pthread.h>
 #include <math.h> 
 
-char* expiration = "*** License for fivesort has expired ...\n";
+static char* expiration = "*** License for fivesort has expired ...\n";
 
 #define errexit(code,str)                          \
   fprintf(stderr,"%s: %s\n",(str),strerror(code)); \
@@ -67,15 +67,15 @@ char* expiration = "*** License for fivesort has expired ...\n";
 // Here more global entities used throughout
 // int (*compareXY)();
 // void **A;
-int sleepingThreads = 0;
-int NUMTHREADS;
+static int sleepingThreads = 0;
+static int NUMTHREADS;
 
 // /*
-#include "Isort.h"
-#include "Hsort.h"
-#include "Dsort.h"
+#include "Isort.c"
+#include "Hsort.c"
+#include "Dsort.c"
 // */
-#include "Qusortm.h"
+#include "Qusortm.c"
 // #include "D3sort.c" // dflgm3
 // #include "C2sort.h"
 #include "Qstack.c"
@@ -86,7 +86,7 @@ void cut2(void **A, int N, int M,
 struct stack *ll;
 struct task *newTask();
 void addTaskSynchronized();
-void tpsc(void **A, int lo, int hi, int depthLimit, int (*compareXY)()) {}
+static void tpsc(void **A, int lo, int hi, int depthLimit, int (*compareXY)()) {}
 
 // #include "C3psort.h"
 

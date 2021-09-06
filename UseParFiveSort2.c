@@ -99,7 +99,7 @@ void callCut2(void **AA, int siz,
  	       int (*compar ) (const void *, const void * ) );
 void validateParFiveSortBT();
 
-#include "C2sort.h"
+#include "C2sort.c"
 /*
 void cut2c(void **A, int N, int M, int depthLimit, 
 	   int (*compar ) (const void *, const void * ) );
@@ -116,7 +116,7 @@ void cut2(void **A, int N, int M,
   exit(1);
 
 
-int NUMTHREADS = 2;
+static int NUMTHREADS = 2;
 // int NUMTHREADS = 1;
 
 // Example of objects that can be used to populate an array to be sorted:

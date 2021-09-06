@@ -4,7 +4,7 @@
    headed by fivesort
 */
 
-const int cut3Limit = 1875;
+static const int cut3Limit = 1875;
 
 // Here more global entities used throughout
 // int (*compareXY)();
@@ -18,7 +18,7 @@ const int cut3Limit = 1875;
 #include "C2sort.c" 
 */
 
-void tpsc();
+static void tpsc();
 // tps is the header function for the three partition sorter tpsc
 void tps(void **A, int N, int M, int (*compareXY)() ) {
   int L = M - N;

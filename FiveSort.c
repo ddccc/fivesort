@@ -57,18 +57,18 @@ OTHER DEALINGS WITH THE SOFTWARE OR DOCUMENTATION.
 #include <string.h>
 #include <math.h>
 
-char* expiration = "*** License for fivesort has expired ...\n";
+static char* expiration = "*** License for fivesort has expired ...\n";
 
 // /*
-#include "Isort.h"
-#include "Hsort.h"
-#include "Dsort.h"
+#include "Isort.c"
+#include "Hsort.c"
+#include "Dsort.c"
 // #include "C2fsort.c" 
 
-#include "Qusortm.h"
+#include "Qusortm.c"
 // #include "D3sort.c" // dflgm3
-#include "C2sort.h" 
-#include "C3sort.h" 
+#include "C2sort.c" 
+#include "C3sort.c" 
 
 void fivesort(void **AA, int size, 
 	int (*compar ) (const void *, const void * ) ) {
