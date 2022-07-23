@@ -129,7 +129,7 @@ void tpsc(void **A, int lo, int hi, int depthLimit, int (*compareXY)()) {
     lw = lo1+third; up = hi1-third;
     pl = A[lw]; pr = A[up];
     if ( compareXY(pl, pr) == 0 || 
-	 compareXY(pr, A[hi1) == 0 ) {
+	 compareXY(pr, A[hi1]) == 0 ) {
 	  // Give up, cannot find good pivots
 	  dflgm(A, lo, hi, middlex, tpsc, depthLimit, compareXY);
 	  return;
