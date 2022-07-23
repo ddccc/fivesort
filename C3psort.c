@@ -46,7 +46,8 @@ void tpsc(void **A, int lo, int hi, int depthLimit, int (*compareXY)()) {
   }
   depthLimit--;
 
- const int small = 4400;
+  // const int small = 4400;
+  /*
   if ( L < small ) { // use 5 elements for sampling
         int sixth = (L + 1) / 6;
         int e1 = lo  + sixth;
@@ -93,6 +94,7 @@ void tpsc(void **A, int lo, int hi, int depthLimit, int (*compareXY)()) {
 	while ( compareXY(pr, A[j]) < 0 ) j--;
 
  } else { // small <= L
+  */
      i = lo; j = hi;
      int middlex = lo + (L>>1); // lo + L/2
 
@@ -126,8 +128,8 @@ void tpsc(void **A, int lo, int hi, int depthLimit, int (*compareXY)()) {
     cut2c(A, lo1, hi1, depthLimit, compareXY); 
     lw = lo1+third; up = hi1-third;
     pl = A[lw]; pr = A[up];
-    if ( compareXY(pl, A[middlex]) == 0 || 
-	 compareXY( A[middlex], pr) == 0 ) {
+    if ( compareXY(pl, pr) == 0 || 
+	 compareXY(pr, A[hi1) == 0 ) {
 	  // Give up, cannot find good pivots
 	  dflgm(A, lo, hi, middlex, tpsc, depthLimit, compareXY);
 	  return;
@@ -142,7 +144,7 @@ void tpsc(void **A, int lo, int hi, int depthLimit, int (*compareXY)()) {
     }
     // j++;
     iswap(lo, lw, A); iswap(hi, up, A); // they are there temporarily 
-  }
+ //  }
 
 	/* 
 	  |)----------(--)-------------(|
